@@ -65,7 +65,8 @@ using namespace std;
  * threads to finish executing before it allows the application
  * to exit.
  */
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
 	/**
 	 * Initializing the thread management system.
@@ -73,83 +74,87 @@ int main(int argc, char* argv[]) {
 	ThreadShell::initialize();
 
 	try
-		{
-			/**
-			 * Initialize the command line manager.
-			 */
-			TCLAP::CmdLine cmd("Runs the capit replay system.", ' ', "0.9");
+	{
+		/**
+		 * Initialize the command line manager.
+		 */
+		TCLAP::CmdLine cmd("Runs the capit replay system.", ' ', "0.9");
 
+		/**
+		 * Argument defining the IP of the targeted host.
+		 */
+		TCLAP::ValueArg<std::string>
+				serverIp(
+						"t",
+						"serverIp",
+						"The ip of the server running the services targeted for replay.",
+						true, "192.168.0.1", "string");
 
-			/**
-			 * Argument defining the IP of the targeted host.
-			 */
-			TCLAP::ValueArg<std::string> serverIp("t","serverIp","The ip of the server running the services targeted for replay.",true,"192.168.0.1","string");
+		/**
+		 * Argument defining the pcap file to be replayed.
+		 */
+		TCLAP::ValueArg<std::string> logFile("f", "logFile",
+				"The path to the pcap file to replay.", true,
+				"data/sample.pcap", "string");
 
-			/**
-			 * Argument defining the pcap file to be replayed.
-			 */
-			TCLAP::ValueArg<std::string> logFile("f","logFile","The path to the pcap file to replay.",true,"data/sample.pcap","string");
+		/*
+		 * Add the target IP Argument to the manager.
+		 */
+		cmd.add(serverIp);
 
+		/**
+		 * Add the pcap file Argument to the manager.
+		 */
+		cmd.add(logFile);
 
-			/*
-			 * Add the target IP Argument to the manager.
-			 */
-			cmd.add(serverIp);
+		/**
+		 * Parse the argc/argv array.
+		 */
+		cmd.parse(argc, argv);
 
-			/**
-			 * Add the pcap file Argument to the manager.
-			 */
-			cmd.add(logFile);
+		/**
+		 * Parse the target IP.
+		 */
+		std::string targetIp = serverIp.getValue();
 
-			/**
-			 * Parse the argc/argv array.
-			 */
-			cmd.parse( argc, argv );
+		/**
+		 * Parse the pcap file.
+		 */
+		std::string file = logFile.getValue();
 
+		cout << "Running for target: " << targetIp << " with log: " << file
+				<< endl;
 
-			/**
-			 * Parse the target IP.
-			 */
-			std::string targetIp = serverIp.getValue();
+		/**
+		 * Lazy load and initialize the client manager singleton.
+		 */
+		ClientManagerInstance::getInstance()->setTargetIp(&targetIp);
 
-			/**
-			 * Parse the pcap file.
-			 */
-			std::string file = logFile.getValue();
+		/**
+		 * Create a packet source object.
+		 */
+		PacketSource source;
 
-			cout << "Running for target: " << targetIp << " with log: " << file << endl;
+		/**
+		 * Load the pcap file to the source.
+		 */
+		source.openSource(file.c_str());
 
-			/**
-			 * Lazy load and initialize the client manager singleton.
-			 */
-			ClientManagerInstance::getInstance()->setTargetIp(&targetIp);
+		/**
+		 * Schedule the source for execution.
+		 */
+		ThreadShell::schedule(&source);
 
-
-			/**
-			 * Create a packet source object.
-			 */
-			PacketSource source;
-
-			/**
-			 * Load the pcap file to the source.
-			 */
-			source.openSource(file.c_str());
-
-			/**
-			 * Schedule the source for execution.
-			 */
-			ThreadShell::schedule(&source);
-
-			/**
-			 * Wait for all threads to end before shutting down.
-			 */
-			ThreadShell::join();
-		}
-		catch (TCLAP::ArgException &e)
-		{
-			std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
-			return -1;
-		}
+		/**
+		 * Wait for all threads to end before shutting down.
+		 */
+		ThreadShell::join();
+	} catch (TCLAP::ArgException &e)
+	{
+		std::cerr << "error: " << e.error() << " for arg " << e.argId()
+				<< std::endl;
+		return -1;
+	}
 
 	return EXIT_SUCCESS;
 }
