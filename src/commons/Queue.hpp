@@ -8,7 +8,10 @@
 #ifndef QUEUE_HPP_
 #define QUEUE_HPP_
 
+#include <iostream>
 #include <queue>
+
+using namespace std;
 
 template<class Type, class Lock> class Queue: public Lock
 {

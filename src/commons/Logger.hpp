@@ -8,6 +8,10 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
+#include <iostream>
+
+using namespace std;
+
 /**
  * A logger provides logging functionality
  * as a stand alone object or as a subclass

@@ -8,7 +8,10 @@
 #ifndef CONTAINER_HPP_
 #define CONTAINER_HPP_
 
+#include <iostream>
 #include <map>
+
+using namespace std;
 
 /**
  * A container is an STL map template guarded by a lock.
