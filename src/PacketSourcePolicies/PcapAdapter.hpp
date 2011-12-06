@@ -53,7 +53,7 @@ public:
 	{
 		const u_char* packet = pcap_next(descr, &header);
 
-		if(packet == 0)
+		if (packet == 0)
 			return NULL;
 
 		return createPacket(&header, packet);
@@ -62,73 +62,131 @@ public:
 
 	Packet* createPacket(const struct pcap_pkthdr* pkthdr, const u_char* packet)
 	{
-		//Packet* packet_ = new Packet();
+
+		/**
+		 * Ethernet layer.
+		 */
 		const struct ether_header* ethernetHeader;
+
+		/**
+		 * IP layer.
+		 */
 		const struct ip* ipHeader;
+
+		/**
+		 * TCP/UDP layer.
+		 */
 		const struct tcphdr* tcpHeader;
 		const struct udphdr* udpHeader;
 
+		/**
+		 * Source and destination address.
+		 */
 		char sourceIp[INET_ADDRSTRLEN];
 		char destIp[INET_ADDRSTRLEN];
 
+		/**
+		 * Source and destination ports.
+		 */
 		u_int sourcePort;
 		u_int destPort;
+
+		/**
+		 * Raw payload.
+		 */
 		u_char* data;
 
+		/**
+		 * Payload length.
+		 */
 		int dataLength = 0;
+
+
+		/**
+		 * Printable payload.
+		 */
 		string dataStr = "";
 
-		ethernetHeader = (struct ether_header*)packet;
-		if (ntohs(ethernetHeader->ether_type) == ETHERTYPE_IP)
+		/**
+		 * Read Ethernet layer.
+		 */
+		ethernetHeader = (struct ether_header*) packet;
+
+		if (ntohs(ethernetHeader->ether_type) != ETHERTYPE_IP)
+			return NULL;
+
+		/**
+		 * Read IP layer.
+		 */
+		ipHeader = (struct ip*) (packet + sizeof(struct ether_header));
+
+		/**
+		 * Read IP addresses.
+		 */
+		inet_ntop(AF_INET, &(ipHeader->ip_src), sourceIp, INET_ADDRSTRLEN);
+		inet_ntop(AF_INET, &(ipHeader->ip_dst), destIp, INET_ADDRSTRLEN);
+
+
+		/**
+		 * The layer under IP is TCP.
+		 */
+		if (ipHeader->ip_p == IPPROTO_TCP)
 		{
-			ipHeader = (struct ip*)(packet + sizeof(struct ether_header));
-			inet_ntop(AF_INET, &(ipHeader->ip_src), sourceIp, INET_ADDRSTRLEN);
-			inet_ntop(AF_INET, &(ipHeader->ip_dst), destIp, INET_ADDRSTRLEN);
 
-			if (ipHeader->ip_p == IPPROTO_TCP)
-			{
-				tcpHeader = (tcphdr*)(packet + sizeof(struct ether_header) + sizeof(struct ip));
-				udpHeader = (udphdr*)(packet + sizeof(struct ether_header) + sizeof(struct ip));
-				sourcePort = ntohs(tcpHeader->source);
-				destPort = ntohs(tcpHeader->dest);
-				data = (u_char*)(packet + sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct tcphdr));
-				dataLength = pkthdr->len - (sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct tcphdr));
+			tcpHeader = (tcphdr*) (packet + sizeof(struct ether_header) + sizeof(struct ip));
 
-				//for(int i =0; i < dataLength; i++)
-				//	cout << (char)data[i];
+			/**
+			 * Read ports.
+			 */
+			sourcePort = ntohs(tcpHeader->source);
+			destPort = ntohs(tcpHeader->dest);
 
-				//cout << endl;
+			/**
+			 * The total header size is the sum of the sub-headers aka each layter.
+			 * The tcp layer size should get calculated from the data offset byte
+			 * couple cause it is of a variable length thus size of wont work with
+			 * it.
+			 */
+			int size_h = sizeof(struct ether_header) + sizeof(struct ip) + tcpHeader->doff*4;
 
-				// convert non-printable characters, other than carriage return, line feed,
-				// or tab into periods when displayed.
-				for (int i = 0; i < dataLength; i++)
-				{
-					if (((data[i] >= 32 && data[i] <= 126) || data[i] == 10 || data[i] == 11 || data[i] == 13) && i > 11) {
-						dataStr += (char)data[i];
-					} //else {
-						//dataStr += ".";
-					//}
+			data = (u_char*) (packet + size_h);
 
-				}
+			dataLength = pkthdr->len - size_h;
 
-			}
+		}
+		else if (ipHeader->ip_p == IPPROTO_UDP)
+		{
+			udpHeader = (udphdr*) (packet + sizeof(struct ether_header)
+					+ sizeof(struct ip));
+			sourcePort = ntohs(udpHeader->source);
+			destPort = ntohs(udpHeader->dest);
+			data = (u_char*) (packet + sizeof(struct ether_header)
+					+ sizeof(struct ip) + sizeof(struct udphdr));
+			dataLength = pkthdr->len - (sizeof(struct ether_header)
+					+ sizeof(struct ip) + sizeof(struct udphdr));
 		}
 
 
+		for (int i = 0; i < dataLength; i++)
+		{
+				if (((data[i] >= 32 && data[i] <= 126) || data[i] == 10 || data[i]== 11 || data[i] == 13))
+				{
+					dataStr += (char) data[i];
+				}
+		}
+
 		string* sourceIp_ = new string(sourceIp);
 		string* destinationIp_ = new string(destIp);
-		string* payload = new std::string(reinterpret_cast<const char*>((u_char*)dataStr.c_str()));
-		//cout << *payload << endl;
-		Packet* packet1= new Packet(pkthdr->ts);
+		string* payload = new std::string(reinterpret_cast<const char*> ((u_char*) dataStr.c_str()));
+
+		Packet* packet1 = new Packet(pkthdr->ts);
 		packet1->setSourceIp(sourceIp_);
 		packet1->setDestinationIp(destinationIp_);
 		packet1->setSourcePort(sourcePort);
 		packet1->setDestinationPort(destPort);
 		packet1->setPayload(payload);
-		packet1->setPacketId(Packet::getNextId());
-		//packet1->setTimestamp(pkthdr->ts);
 
-		return  packet1;
+		return packet1;
 	}
 
 };
