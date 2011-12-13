@@ -23,6 +23,7 @@
  */
 class AbstractLock
 {
+public:
 	/*
 	 * Attempts to lock this lock object.
 	 */
@@ -32,6 +33,11 @@ class AbstractLock
 	 * Releases / unlocks this object.
 	 */
 	virtual void unlock() = 0;
+
+	virtual ~AbstractLock()
+	{
+		//DO Nothing.
+	}
 };
 
 /**

@@ -38,10 +38,13 @@ private:
 	 * Buffer holding the error output.
 	 */
 	char errbuf[PCAP_ERRBUF_SIZE];
+
+	string* fileName;
 public:
 
 	void openSource(const char* source)
 	{
+		fileName = new string(source);
 		descr = pcap_open_offline(source, errbuf);
 		if (descr == NULL)
 		{
@@ -110,27 +113,22 @@ public:
 		/**
 		 * Read Ethernet layer.
 		 */
-		ethernetHeader = (struct ether_header*) packet;
-
-		if (ntohs(ethernetHeader->ether_type) != ETHERTYPE_IP)
+		ethernetHeader = (struct ether_header*)(packet);
+        if (ntohs(ethernetHeader->ether_type) != ETHERTYPE_IP)
 			return NULL;
-
-		/**
+        /**
 		 * Read IP layer.
 		 */
-		ipHeader = (struct ip*) (packet + sizeof(struct ether_header));
-
-		/**
+        ipHeader = (struct ip*)((packet + sizeof (struct ether_header)));
+        /**
 		 * Read IP addresses.
 		 */
-		inet_ntop(AF_INET, &(ipHeader->ip_src), sourceIp, INET_ADDRSTRLEN);
-		inet_ntop(AF_INET, &(ipHeader->ip_dst), destIp, INET_ADDRSTRLEN);
-
-
-		/**
+        inet_ntop(AF_INET, &(ipHeader->ip_src), sourceIp, INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &(ipHeader->ip_dst), destIp, INET_ADDRSTRLEN);
+        /**
 		 * The layer under IP is TCP.
 		 */
-		if (ipHeader->ip_p == IPPROTO_TCP)
+        if (ipHeader->ip_p == IPPROTO_TCP)
 		{
 
 			tcpHeader = (tcphdr*) (packet + sizeof(struct ether_header) + sizeof(struct ip));
@@ -165,29 +163,29 @@ public:
 			dataLength = pkthdr->len - (sizeof(struct ether_header)
 					+ sizeof(struct ip) + sizeof(struct udphdr));
 		}
+        for(int i = 0;i < dataLength;i++){
+            if(((data[i] >= 32 && data[i] <= 126) || data[i] == 10 || data[i] == 11 || data[i] == 13)){
+                dataStr += (char)(data[i]);
+            }
+        }
 
+        string *sourceIp_ = new string(sourceIp);
+        string *destinationIp_ = new string(destIp);
+        string *payload = new std::string(reinterpret_cast<const char*>((u_char*)(dataStr.c_str())));
+        Packet *packet1 = new Packet(pkthdr->ts);
+        packet1->setSourceIp(sourceIp_);
+        packet1->setDestinationIp(destinationIp_);
+        packet1->setSourcePort(sourcePort);
+        packet1->setDestinationPort(destPort);
+        packet1->setPayload(payload);
+        packet1->setFileName(fileName);
+        return packet1;
+    }
 
-		for (int i = 0; i < dataLength; i++)
-		{
-				if (((data[i] >= 32 && data[i] <= 126) || data[i] == 10 || data[i]== 11 || data[i] == 13))
-				{
-					dataStr += (char) data[i];
-				}
-		}
-
-		string* sourceIp_ = new string(sourceIp);
-		string* destinationIp_ = new string(destIp);
-		string* payload = new std::string(reinterpret_cast<const char*> ((u_char*) dataStr.c_str()));
-
-		Packet* packet1 = new Packet(pkthdr->ts);
-		packet1->setSourceIp(sourceIp_);
-		packet1->setDestinationIp(destinationIp_);
-		packet1->setSourcePort(sourcePort);
-		packet1->setDestinationPort(destPort);
-		packet1->setPayload(payload);
-
-		return packet1;
-	}
+    string *getFileName() const
+    {
+        return fileName;
+    }
 
 };
 

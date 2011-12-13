@@ -20,6 +20,7 @@ private:
 	string* sourceIp;
 	string* destinationIp;
 	string* payload;
+	string* fileName;
 
 	int sourcePort;
 	int destinationPort;
@@ -118,9 +119,24 @@ public:
         this->packetId = packetId;
     }
 
+    string *getFileName() const;
+    void setFileName(string *fileName);
+
 };
 
 
 int Packet::idCounter=0;
+
+string *Packet::getFileName() const
+{
+    return fileName;
+}
+
+void Packet::setFileName(string *fileName)
+{
+    this->fileName = fileName;
+}
+
+
 
 #endif

@@ -9,12 +9,19 @@
 #define SINGLETON_HPP_
 
 /**
- * This class represents a wrapper around
+ * This template represents a wrapper around
  * a specific class that transforms it into
  * a singleton object.
  *
- * Object instantiation is blocked through
- * protected constructor.
+ *
+ * A singleton object should never be initialized
+ * since it only exposes static functionality. Each
+ * singleton definition as a class is the Singleton
+ * Holder of a different class.
+ *
+ * How to use :
+ * Singleton<MyClass> MyClassSingleton;
+ * MyClassSingleton::getInstance()->...
  */
 template <class T> class Singleton
 {
@@ -24,15 +31,29 @@ public:
 		if (!instance)
 			instance = new T;
 
-
 		return instance;
 	}
-protected:
-	Singleton();
-	~Singleton();
 private:
+	/*
+	 * Hide constructor.
+	 */
+	Singleton();
+
+	/*
+	 * Hide destructor (needed ? )
+	 */
+	~Singleton();
+
+	/*
+	 * Hide copy constructor.
+	 */
 	Singleton(Singleton const&);
+
+	/*
+	 * Hide assignment.
+	 */
 	Singleton& operator=(Singleton const&);
+
 	static T* instance;
 };
 

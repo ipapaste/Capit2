@@ -58,5 +58,4 @@ public T6
 
 };
 
-
 #endif /* ENTITY_HPP_ */

@@ -14,6 +14,8 @@
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
 
+#include "FlowManager.hpp"
+
 using namespace std;
 
 /**
