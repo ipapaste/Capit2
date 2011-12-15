@@ -56,7 +56,10 @@ public:
 	void accept(Packet& p)
 	{
 		if(p.getPayload()->size()<1)
+		{
+			delete &p;
 			return;
+		}
 
 		int serverPort = p.getDestinationPort();
 
@@ -67,12 +70,18 @@ public:
 			ApplicationAccessor* accessor = ApplicationFactoryInstance::getInstance()->getItem(&serverPort);
 
 			if(accessor == NULL)
+			{
+				delete &p;
 				return;
+			}
 
 			app = accessor->getNewObject();
 
 			if(app == NULL)
+			{
+				delete &p;
 				return;
+			}
 
 			addItem(&serverPort, app);
 
