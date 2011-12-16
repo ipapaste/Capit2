@@ -13,7 +13,6 @@
 #include "Thread.hpp"
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
-
 #include "FlowManager.hpp"
 
 using namespace std;
@@ -69,12 +68,10 @@ using namespace std;
  */
 int main(int argc, char* argv[])
 {
-
 	/**
 	 * Initializing the thread management system.
 	 */
 	ThreadShell::initialize();
-
 	try
 	{
 		/**
