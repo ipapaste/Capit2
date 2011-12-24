@@ -15,7 +15,7 @@
 
 using namespace std;
 
-class Packet
+class Packet:public MemoryPool<Packet>
 {
 private:
 
