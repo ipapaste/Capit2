@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sys/time.h>
 
+#include "commons/MemoryPool.hpp"
+
 using namespace std;
 
 class Packet
@@ -34,9 +36,6 @@ private:
 	 */
 	const timeval* timestamp;
 
-
-	Packet *next;
-
 public:
 	Packet(const timeval& ts)
 	{
@@ -51,63 +50,6 @@ public:
 		delete sourceIp;
 		delete destinationIp;
 		delete payload;
-	}
-
-	static const int BLOCK_SIZE = 512;
-	static Packet* headOfFreeList;
-
-	static void* operator new(size_t size)
-	{
-		if(size != sizeof(Packet))
-			return ::operator new(size);
-
-		Packet* p = headOfFreeList;
-
-		if(p)
-		{
-			headOfFreeList = p->next;
-		}
-		else
-		{
-			Packet* newBlock = static_cast<Packet*>(::operator new(BLOCK_SIZE * sizeof(Packet)));
-
-			for(int i = 0; i < BLOCK_SIZE-1; ++i)
-			{
-				newBlock[i].next = &newBlock[i+1];
-			}
-
-			newBlock[BLOCK_SIZE].next = 0;
-
-			p = newBlock;
-
-			//This will leak memory if the else{} was entered because
-			//the queue got full ( headoffreelist went to the tail ).
-			//A new list will be allocated while the old one will still
-			//exist since the packets need it. Once the old packets wont
-			//need the memory, they wont release on the old one butmay even
-			//try to access memory outside the scope of the freelist.
-			headOfFreeList = &newBlock[1];
-		}
-
-		return p;
-	}
-
-	static void operator delete(void *deadObject, size_t size)
-	{
-		if(deadObject == 0)
-			return;
-
-		if(size != sizeof(Packet))
-		{
-			::operator delete(deadObject);
-			return;
-		}
-
-		Packet* carcass = static_cast<Packet*>(deadObject);
-
-		carcass->next = headOfFreeList;
-
-		headOfFreeList = carcass;
 	}
 
 	static int getNextId()
@@ -187,7 +129,6 @@ public:
 
 
 int Packet::idCounter=0;
-Packet* Packet::headOfFreeList = 0;
 
 string *Packet::getFileName() const
 {
