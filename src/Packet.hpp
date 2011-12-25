@@ -1,11 +1,11 @@
 #ifndef PACKET_H_
 #define PACKET_H_
+
 /**
  * This class represents a virtual packet extracted
  * from a pcap packet format. This implementation uses
  * the minimum possible data required for network replay.
  */
-
 #include <netinet/ip.h>
 #include <string>
 #include <iostream>

@@ -17,7 +17,6 @@
 #include "Node.hpp"
 #include "Thread.hpp"
 
-
 /**
  * Should have a lock since two threads will
  * access it to print data. The first is the
@@ -27,8 +26,7 @@
  * it is sending the packets to its output
  * channel asynchronously.
  */
-typedef Logger<1,MutexLock> ApplicationLogger;
-
+typedef Logger<1, MutexLock> ApplicationLogger;
 
 /**
  * This represents the type of a Queue that
@@ -68,9 +66,8 @@ typedef Queue<AbstractNode::PacketType*, MutexLock> STLQueue;
  * packets to be sent, which is when the application
  * terminates its thread.
  */
-typedef Entity5<ThreadShell,AbstractNode,ApplicationLogger,STLQueue,BoostSocket> AbstractApplicationType;
-
-
+typedef Entity5<ThreadShell, AbstractNode, ApplicationLogger, STLQueue,
+		BoostSocket> AbstractApplicationType;
 
 class AbstractApplication: public AbstractApplicationType
 {
@@ -108,9 +105,8 @@ public:
 	 */
 	AbstractApplication()
 	{
-		status  = INACTIVE;
+		status = INACTIVE;
 	}
-
 
 	/**
 	 * A PacketSource that acts as a different thread calls
@@ -123,14 +119,14 @@ public:
 
 		lock.lock();
 
-		if(status == SLEEPING)
+		if (status == SLEEPING)
 		{
 			status = ACTIVE;
 			lock.unlock();
 
 			ThreadShell::condSignal(fakeCond);
 		}
-		else if(status == INACTIVE)
+		else if (status == INACTIVE)
 		{
 			connect(*packet.getDestinationIp(), packet.getDestinationPort());
 
@@ -155,6 +151,15 @@ public:
 	 */
 	void run()
 	{
+		while (1==1)
+		{
+			executeCode();
+		}
+
+	}
+
+	void executeCode()
+	{
 		/**
 		 * Should never be null since run() is called
 		 * after a PacketSource adds the first packet
@@ -164,26 +169,22 @@ public:
 		 */
 		Packet* packet = getNext();
 
-		cout << "Sending:" <<*packet->getPayload() << endl;
+		cout << "Sending:" << *packet->getPayload() << endl;
 
-		if(packet->getPayload() !=0)
-			sendData((u_char*)packet->getPayload()->c_str());
+		if (packet->getPayload() != 0)
+			sendData((u_char*) packet->getPayload()->c_str());
 
 		delete packet;
 
-		if(isEmpty())
+		if (isEmpty())
 		{
 			lock.lock();
 			status = SLEEPING;
 			lock.unlock();
-			ThreadShell::condWait(fakeCond,fakeMutex);
+			ThreadShell::condWait(fakeCond, fakeMutex);
 		}
-
-		//TODO: Fix !! May cause trouble due to multiple recursive calls.
-		run();
 
 	}
 };
-
 
 #endif /* ABSTRACTAPPLICATION_HPP_ */
