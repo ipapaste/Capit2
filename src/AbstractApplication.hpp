@@ -151,7 +151,7 @@ public:
 	 */
 	void run()
 	{
-		while (1==1)
+		while (status != INACTIVE)
 		{
 			executeCode();
 		}

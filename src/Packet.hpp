@@ -57,7 +57,7 @@ public:
 		return idCounter++;
 	}
 
-    string *getDestinationIp() const
+    const string* getDestinationIp() const
     {
         return destinationIp;
     }
@@ -67,12 +67,12 @@ public:
         return destinationPort;
     }
 
-    string *getPayload() const
+    const string* getPayload() const
     {
         return payload;
     }
 
-    string *getSourceIp() const
+    const string* getSourceIp() const
     {
         return sourceIp;
     }
@@ -122,7 +122,7 @@ public:
         this->packetId = packetId;
     }
 
-    string *getFileName() const;
+    const string* getFileName() const;
     void setFileName(string *fileName);
 
 };
@@ -130,7 +130,7 @@ public:
 
 int Packet::idCounter=0;
 
-string *Packet::getFileName() const
+const string* Packet::getFileName() const
 {
     return fileName;
 }

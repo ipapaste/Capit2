@@ -15,28 +15,24 @@
 #include "Client.hpp"
 #include "Node.hpp"
 
-
 /**
  * A ClientManager can be accessed by multiple
  * PacketSources that act as independent threads
  * thus it needs a Locking Logger.
  */
-typedef Logger<1,MutexLock> ClientManagerLogger;
-
+typedef Logger<1, MutexLock> ClientManagerLogger;
 
 /**
  * A ClientManager contains a map of <IP , Client >.
  */
-typedef Container<string,Client*,MutexLock> ClientManagerContainer;
-
+typedef Container<const string, Client*, MutexLock> ClientManagerContainer;
 
 /**
  * A ClientManager is an Entity that receives packets
  * from multiple sources, generates Clients that based
  * on those Packets and forwards the packets to the Clients.
  */
-typedef Entity3<ClientManagerContainer, AbstractNode,ClientManagerLogger> AbstractClientManager;
-
+typedef Entity3<ClientManagerContainer, AbstractNode, ClientManagerLogger> AbstractClientManager;
 
 /**
  * The ClientManager contains Clients that communicate
@@ -58,9 +54,29 @@ private:
 	 */
 	string* targetIp;
 
+	int sourceCount;
+
 public:
 
+	ClientManager()
+	{
+		sourceCount = 0;
+	}
 
+	void registerSource()
+	{
+		sourceCount++;
+	}
+
+	void removeSource()
+	{
+		sourceCount--;
+
+		if (sourceCount == 0)
+		{
+			exit(0);
+		}
+	}
 
 	/**
 	 * Before forwarding the packets over to the Clients
@@ -76,14 +92,13 @@ public:
 	 */
 	void accept(AbstractClientManager::PacketType& packet)
 	{
-		string* dstIp = packet.getDestinationIp();
-		string* srcIp = packet.getSourceIp();
+		const string* dstIp = packet.getDestinationIp();
+		const string* srcIp = packet.getSourceIp();
 
 		int dstPort = packet.getDestinationPort();
 
-
 		//Filter out.
-		if(dstIp->compare(*targetIp) !=0)
+		if (dstIp->compare(*targetIp) != 0)
 		{
 			delete &packet;
 			return;
@@ -91,11 +106,11 @@ public:
 
 		Client* client;
 
-		if(!hasItem(srcIp))
+		if (!hasItem(srcIp))
 		{
 			client = new Client();
-			log("Generating a new client.",4);
-			addItem(srcIp,client);
+			log("Generating a new client.", 4);
+			addItem(srcIp, client);
 		}
 		else
 		{
@@ -115,7 +130,8 @@ public:
 	{
 		return *targetIp;
 	}
-};
+}
+;
 
 /**
  * We have only one ClientManager in the application so we

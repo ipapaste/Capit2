@@ -9,6 +9,7 @@
 #define MEMORYPOOL_HPP_
 
 #include <iostream>
+#include "Lock.hpp"
 using namespace std;
 
 
@@ -44,6 +45,8 @@ private:
 	 */
 	T* next;
 
+	static MutexLock* lock;
+
 
 public:
 
@@ -52,6 +55,11 @@ public:
 	 */
 	static void* operator new(size_t size)
 	{
+		if(lock == 0)
+			lock = new MutexLock();
+
+		lock->lock();
+
 		if (size != sizeof(T))
 			return ::operator new(size);
 
@@ -77,7 +85,7 @@ public:
 
 			headOfFreeList = &newBlock[1];
 		}
-
+		lock->unlock();
 		return p;
 	}
 
@@ -86,6 +94,7 @@ public:
 	 */
 	static void operator delete(void *deadObject, size_t size)
 	{
+		lock->lock();
 		if (deadObject == 0)
 			return;
 
@@ -100,9 +109,10 @@ public:
 		carcass->next = headOfFreeList;
 
 		headOfFreeList = carcass;
+		lock->unlock();
 	}
 };
 
+template< class T > MutexLock* MemoryPool<T>::lock = 0;
 template< class T > T* MemoryPool<T>::headOfFreeList = 0;
-
 #endif /* MEMORYPOOL_HPP_ */

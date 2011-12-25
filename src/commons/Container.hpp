@@ -22,6 +22,12 @@ private:
 	map<ContainerIndex, ContainerValue> content;
 
 public:
+
+	const map<ContainerIndex,ContainerValue>* getMap() const
+	{
+		return &content;
+	}
+
 	void addItem(ContainerIndex* index, ContainerValue value)
 	{
 		Lock::lock();

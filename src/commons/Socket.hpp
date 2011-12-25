@@ -23,11 +23,11 @@ using boost::asio::ip::tcp;
 class AbstractSocket
 {
 public:
-	virtual void connectImpl(string& ip, int port) = 0;
+	virtual void connectImpl(const string& ip, int port) = 0;
 
 	virtual bool isConnected() = 0;
 
-	void connect(string& ip , int port)
+	void connect(const string& ip , int port)
 	{
 		if (!isConnected())
 			connectImpl(ip,port);
@@ -53,7 +53,7 @@ private:
 	std::ostream* request_stream;
 public:
 
-	void connectImpl(string& ip, int port)
+	void connectImpl(const string& ip, int port)
 	{
 
 		io_service = new boost::asio::io_service();

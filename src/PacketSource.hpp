@@ -35,7 +35,10 @@ public:
 
 			Packet* packet1 = getNextPacket();
 			if(packet1 == NULL)
+			{
+				ClientManagerInstance::getInstance()->removeSource();
 				return;
+			}
 
 			ClientManagerInstance::getInstance()->accept(*packet1);
 			if(packetCount == 0)

@@ -14,8 +14,12 @@
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
 #include "FlowManager.hpp"
+#include <boost/foreach.hpp>
+#include <boost/tokenizer.hpp>
+#include <string>
 
 using namespace std;
+using namespace boost;
 
 /**
  * This is the main entry point for the application. To start
@@ -82,18 +86,18 @@ int main(int argc, char* argv[])
 		/**
 		 * Argument defining the IP of the targeted host.
 		 */
-		TCLAP::ValueArg<std::string>
-				serverIp(
-						"t",
-						"serverIp",
-						"The ip of the server running the services targeted for replay.",
-						true, "192.168.0.1", "string");
+		TCLAP::ValueArg<std::string> serverIp(
+				"t",
+				"serverIp",
+				"The ip of the server running the services targeted for replay.",
+				true, "192.168.0.1", "string");
 
 		/**
 		 * Argument defining the pcap file to be replayed.
 		 */
 		TCLAP::ValueArg<std::string> logFile("f", "logFile",
-				"The path to the pcap file to replay.", true,
+				"The path to the pcap file to replay. If more than one files "
+						"are needed, separate them with +.", true,
 				"data/sample.pcap", "string");
 
 		/*
@@ -119,9 +123,9 @@ int main(int argc, char* argv[])
 		/**
 		 * Parse the pcap file.
 		 */
-		std::string file = logFile.getValue();
+		std::string files = logFile.getValue();
 
-		cout << "Running for target: " << targetIp << " with log: " << file
+		cout << "Running for target: " << targetIp << " with log: " << files
 				<< endl;
 
 		/**
@@ -129,20 +133,17 @@ int main(int argc, char* argv[])
 		 */
 		ClientManagerInstance::getInstance()->setTargetIp(&targetIp);
 
-		/**
-		 * Create a packet source object.
-		 */
-		PacketSource source;
+		char_separator<char> sep("+");
 
-		/**
-		 * Load the pcap file to the source.
-		 */
-		source.openSource(file.c_str());
+		tokenizer<char_separator<char> > tokens(files, sep);
 
-		/**
-		 * Schedule the source for execution.
-		 */
-		ThreadShell::schedule(&source);
+		BOOST_FOREACH(string t, tokens)
+		{
+			PacketSource* source = new PacketSource();
+			source->openSource(t.c_str());
+			ClientManagerInstance::getInstance()->registerSource();
+			ThreadShell::schedule(source);
+		}
 
 		/**
 		 * Wait for all threads to end before shutting down.
