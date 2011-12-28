@@ -13,10 +13,12 @@
 #include "Thread.hpp"
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
-#include "FlowManager.hpp"
+#include "cluster/Preproccessor.hpp"
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <string>
+#include "ParameterFactory.hpp"
+#include "cluster/Accessor.hpp"
 
 using namespace std;
 using namespace boost;
@@ -100,6 +102,27 @@ int main(int argc, char* argv[])
 						"are needed, separate them with +.", true,
 				"data/sample.pcap", "string");
 
+		/**
+		* Argument defining the pcap file to be replayed.
+		*/
+		TCLAP::ValueArg<std::string> parameters("p", "cluster_parameters",
+				"Specify the list of clustering parameters to use.", false,
+				"FTP", "string");
+
+		/**
+		* Argument defining application mode.
+		*/
+		TCLAP::ValueArg<std::string> mode("m", "mode",
+				"The execution mode of the application. Modes can be replay and cluster", true,
+				"replay", "string");
+
+		/**
+		* Argument defining application mode.
+		*/
+		TCLAP::ValueArg<int> clusterSize("c", "cluster_number",
+				"The number of clusters to use.", false,
+				3, "string");
+
 		/*
 		 * Add the target IP Argument to the manager.
 		 */
@@ -109,6 +132,17 @@ int main(int argc, char* argv[])
 		 * Add the pcap file Argument to the manager.
 		 */
 		cmd.add(logFile);
+
+
+		/**
+		 * Add the mode Argument to the manager.
+		 */
+		cmd.add(mode);
+
+		cmd.add(clusterSize);
+
+		cmd.add(parameters);
+
 
 		/**
 		 * Parse the argc/argv array.
@@ -125,8 +159,19 @@ int main(int argc, char* argv[])
 		 */
 		std::string files = logFile.getValue();
 
+		/**
+		 * Parse the application mode.
+		 */
+		std::string appMode = mode.getValue();
+
+		if(appMode.compare("replay") && appMode.compare("cluster"))
+		{
+			cout<< "Mode can only be replay or cluster." << endl;
+			exit(0);
+		}
+
 		cout << "Running for target: " << targetIp << " with log: " << files
-				<< endl;
+				<< " Mode is:" << appMode <<endl;
 
 		/**
 		 * Lazy load and initialize the client manager singleton.
@@ -137,17 +182,84 @@ int main(int argc, char* argv[])
 
 		tokenizer<char_separator<char> > tokens(files, sep);
 
-		BOOST_FOREACH(string t, tokens)
+		if(!appMode.compare("replay"))
 		{
-			PacketSource* source = new PacketSource();
-			source->openSource(t.c_str());
-			ClientManagerInstance::getInstance()->registerSource();
-			ThreadShell::schedule(source);
+			BOOST_FOREACH(string t, tokens)
+			{
+				PacketSource* source = new PacketSource();
+				source->openSource(t.c_str());
+				ClientManagerInstance::getInstance()->registerSource();
+				ThreadShell::schedule(source);
+			}
+		}
+		else if(!appMode.compare("cluster"))
+		{
+			int clusterNo = clusterSize.getValue();
+
+			if(clusterNo <= 1)
+			{
+				cout << "Cluster number must be greater than one." << endl;
+				exit(0);
+			}
+
+
+			string params = parameters.getValue();
+
+			char_separator<char> sepp("+");
+
+			tokenizer<char_separator<char> > tokens(params, sepp);
+
+			int size = 0;
+			BOOST_FOREACH(string tt, tokens)
+			{
+				size++;
+			}
+
+			if(size <2)
+			{
+				cout <<"At least two parameter must be specified."<< endl;
+				exit(0);
+			}
+
+			PcapAdapterShell shell;
+			FTPFlowPreproc proc;
+
+			shell.openSource(files.c_str());
+
+			Packet* p = shell.getNextPacket();
+			while (p != NULL)
+			{
+				proc.readInputObject(p);
+				p = shell.getNextPacket();
+			}
+			map<string,Flow*>::iterator it;
+			map<string,Flow*>& objects = *proc.getOutputObjects();
+
+			DelayAccessor ac;
+
+			for(it = objects.begin(); it != objects.end(); ++it)
+			{
+				cout <<"Flow Average Delay:" << ac.getValue(it->second)<< endl;
+				cout << it->first << endl;
+				map<int,Packet*>& data = *it->second->getInputObjects();
+
+				map<int,Packet*>::iterator in;
+
+				for(in = data.begin(); in != data.end(); ++in)
+				{
+					cout << *in->second->getPayload() << endl;
+				}
+
+			}
+
+			//cout << "Hi:"<< objects.begin()->second->getInputObjects()->begin()->second->getPacketId() << endl;
+			exit(0);
 		}
 
 		/**
 		 * Wait for all threads to end before shutting down.
 		 */
+
 		ThreadShell::join();
 	} catch (TCLAP::ArgException &e)
 	{

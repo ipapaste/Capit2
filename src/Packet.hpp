@@ -34,7 +34,7 @@ private:
 	 * Represents the delay in which this packet arrived
 	 * with zero reference the start of the pcap file reading.
 	 */
-	const timeval* timestamp;
+	long timestamp;
 
 public:
 	Packet(const timeval& ts)
@@ -42,7 +42,8 @@ public:
 		sourceIp = NULL;
 		destinationIp = NULL;
 		payload = NULL;
-		timestamp = &ts;
+		timestamp = Tools::getTimeInMillis(&ts);
+		setPacketId(getNextId());
 	}
 
 	~Packet()
@@ -54,7 +55,8 @@ public:
 
 	static int getNextId()
 	{
-		return idCounter++;
+		idCounter++;
+		return idCounter;
 	}
 
     const string* getDestinationIp() const
@@ -82,7 +84,7 @@ public:
         return sourcePort;
     }
 
-    const timeval *getTimestamp() const
+    long getTimestamp() const
     {
         return timestamp;
     }

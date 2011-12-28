@@ -264,6 +264,7 @@ public:
 	static void join()
 	{
 		pthread_join(daemonThread, NULL);
+		condSignal(count_threshold_cv);
 	}
 
 };

@@ -28,8 +28,8 @@ class PacketSource:public PacketSource1
 public:
 	void run(){
 		int packetCount = 0;
-		int initialDelay = 0;
-		int lastDelay = 0;
+		long initialDelay = 0;
+		long lastDelay = 0;
 		while(packetCount < 5)
 		{
 
@@ -42,10 +42,10 @@ public:
 
 			ClientManagerInstance::getInstance()->accept(*packet1);
 			if(packetCount == 0)
-				initialDelay = Tools::getTimeInMillis(packet1->getTimestamp());
+				initialDelay = packet1->getTimestamp();
 
 			if(packetCount == 5 -1)
-				lastDelay = Tools::getTimeInMillis(packet1->getTimestamp());
+				lastDelay = packet1->getTimestamp();
 
 			packetCount++;
 

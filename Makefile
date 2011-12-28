@@ -1,4 +1,4 @@
-CXXFLAGS = -std=c++0x -I lib -I /usr/include/gtkmm-3.0 `pkg-config gtkmm-3.0 --cflags --libs`
+CXXFLAGS = -std=c++0x -I lib -I src -I /usr/include/gtkmm-3.0 `pkg-config gtkmm-3.0 --cflags --libs`
 
 OBJS =		src/Capit2.o 
 

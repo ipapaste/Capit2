@@ -16,18 +16,13 @@ using namespace std;
 
 namespace Tools
 {
-	int getTimeInMillis(const timeval* time)
+	long getTimeInMillis(const timeval* time)
 	{
 		//cout << (int)(time->tv_usec/1000) + time->tv_sec*1000 << endl;
-		return (int)(time->tv_usec/1000) + time->tv_sec*1000;
+		return (long)(time->tv_usec/1000) + time->tv_sec*1000;
 	}
 
-	int diffInMillis(const timeval* time1, const timeval* time2)
-	{
-		return getTimeInMillis(time2) - getTimeInMillis(time1);
-	}
-
-	int currentTimeInMillis()
+	long currentTimeInMillis()
 	{
 		struct timeval now;
 
