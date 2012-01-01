@@ -17,6 +17,8 @@ using namespace std;
 
 class Packet:public MemoryPool<Packet>
 {
+public:
+	typedef int IdType;
 private:
 
 	string* sourceIp;

@@ -12,15 +12,16 @@
 #include "commons/Container.hpp"
 #include "commons/Entity.hpp"
 #include "commons/Singleton.hpp"
-#include "cluster/Preproccessor.hpp"
+#include "cluster/Preprocessor.hpp"
 #include "cluster/Accessor.hpp"
-
 
 /**
  * The AbstractAccessor provides access to an Access porointer.
  */
 typedef AbstractAccessor<float*> ParametersAccessor;
 
+
+typedef ObjectAccessor<DelayAccessor, ParametersAccessor> FlowDelayAccessor;
 /**
  * The Container contains pairs of Port numbers and ApplicationAccessors.
  */
@@ -33,7 +34,7 @@ public:
 	{
 		//int httpPort =80;
 		//int ftpPort = 21;
-		//addItem(&httpPort, new HTTPAccessor);
+		//addItem(new string("FlowDelay"), new FlowDelayAccessor);
 		//addItem(&ftpPort, new FTPAccessor);
 	}
 };

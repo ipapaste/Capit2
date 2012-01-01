@@ -52,8 +52,15 @@ private:
 	/*
 	 * The target server Ip.
 	 */
-	string* targetIp;
+	string targetIp;
 
+
+	/*
+	 * Counts the sources registered to this
+	 * client manager singleton that are authorized
+	 * to send packets. Used in order to wake
+	 * applications when the sources are done.
+	 */
 	int sourceCount;
 
 public:
@@ -61,6 +68,7 @@ public:
 	ClientManager()
 	{
 		sourceCount = 0;
+		targetIp = string("127.0.0.1");
 	}
 
 	void registerSource()
@@ -98,7 +106,7 @@ public:
 		int dstPort = packet.getDestinationPort();
 
 		//Filter out.
-		if (dstIp->compare(*targetIp) != 0)
+		if (dstIp->compare(targetIp) != 0)
 		{
 			delete &packet;
 			return;
@@ -106,29 +114,29 @@ public:
 
 		Client* client;
 
-		if (!hasItem(srcIp))
+		if (!hasItem(*srcIp))
 		{
 			client = new Client();
 			log("Generating a new client.", 4);
-			addItem(srcIp, client);
+			addItem(*srcIp, client);
 		}
 		else
 		{
-			client = getItem(srcIp);
+			client = getItem(*srcIp);
 		}
 
 		client->accept(packet);
 
 	}
 
-	void setTargetIp(string* ip)
+	void setTargetIp(string ip)
 	{
 		targetIp = ip;
 	}
 
-	string& getTargetIp()
+	string getTargetIp()
 	{
-		return *targetIp;
+		return targetIp;
 	}
 }
 ;

@@ -17,6 +17,9 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 #include "../Packet.hpp"
+#include <string>
+
+using namespace std;
 
 class PcapAdapterShell
 {
@@ -25,7 +28,9 @@ private:
 	 * Descriptor pointing at the .cap file that this
 	 * parser is opening for offline capturing.
 	 */
-	pcap_t *descr;
+	pcap_t* descr;
+
+	bpf_program filter;
 
 	/**
 	 * Each pcap file has a header that contains file
@@ -50,6 +55,16 @@ public:
 		{
 			cout << "pcap_open_live() failed: " << errbuf << endl;
 		}
+	}
+
+	void setFilter(string& s)
+	{
+		if(pcap_compile(descr, &filter, s.c_str(), 0, 0) == -1)
+		{
+			cout << "Incorrect filter expression." << endl;
+			exit(0);
+		}
+		pcap_setfilter(descr, &filter);
 	}
 
 	Packet* getNextPacket()

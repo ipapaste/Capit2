@@ -44,6 +44,11 @@ public:
 	 * Does not necessarily define polymorphism.
 	 */
 	virtual void accept(Packet& p) = 0;
+
+	virtual ~Node()
+	{
+
+	}
 };
 
 

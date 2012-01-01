@@ -18,6 +18,11 @@ template < class AbstractClass> class AbstractAccessor
 public:
 	typedef AbstractClass ReturnType;
 	virtual ReturnType getNewObject() = 0;
+
+	virtual ~AbstractAccessor()
+	{
+
+	}
 };
 
 /**

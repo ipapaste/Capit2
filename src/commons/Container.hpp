@@ -28,16 +28,16 @@ public:
 		return &content;
 	}
 
-	void addItem(ContainerIndex* index, ContainerValue value)
+	void addItem(ContainerIndex index, ContainerValue value)
 	{
 		Lock::lock();
-		content[*index] = value;
+		content[index] = value;
 		Lock::unlock();
 	}
 
-	ContainerValue getItem(ContainerIndex* index)
+	ContainerValue getItem(ContainerIndex index)
 	{
-		return content[*index];
+		return content[index];
 	}
 
 	void removeItem(ContainerIndex index)
@@ -49,9 +49,9 @@ public:
 		Lock::unlock();
 	}
 
-	bool hasItem(ContainerIndex* index)
+	bool hasItem(ContainerIndex index)
 	{
-		return content[*index] == 0 ? false : true;
+		return content[index] == 0 ? false : true;
 	}
 };
 

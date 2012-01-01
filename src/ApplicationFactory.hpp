@@ -40,8 +40,8 @@ public:
 	{
 		int httpPort =80;
 		int ftpPort = 21;
-		addItem(&httpPort, new HTTPAccessor);
-		addItem(&ftpPort, new FTPAccessor);
+		addItem(httpPort, new HTTPAccessor);
+		addItem(ftpPort, new FTPAccessor);
 	}
 };
 

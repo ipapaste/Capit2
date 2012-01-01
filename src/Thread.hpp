@@ -173,7 +173,7 @@ public:
 		rate_ms = delay;
 	}
 
-	~ThreadShell()
+	virtual ~ThreadShell()
 	{
 
 	}

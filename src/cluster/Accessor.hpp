@@ -8,7 +8,7 @@
 #ifndef CLUSTER_ACCESSOR_HPP_
 #define CLUSTER_ACCESSOR_HPP_
 
-#include "Preproccessor.hpp"
+#include "Preprocessor.hpp"
 #include <map>
 #include "commons/Tools.hpp"
 
@@ -31,14 +31,13 @@ using namespace std;
  * in a space ( Eucledean ) with contribution that
  * can be either weighted or not.
  */
-template < class ValueT , class ObjectT > class Accessor
+template < class ValueT , class OutputObject > class Accessor
 {
+private:
+	string name;
 public:
-	/*
-	 * Each Object class must implement
-	 * an int getId() interface.
-	 */
-	typedef ObjectT Object;
+
+	typedef string IdType;
 
 	/*
 	 * The value type usually is a number.
@@ -48,7 +47,7 @@ public:
 	 * Returns the specific characteristic value that
 	 * this Accessor extracts from the object.
 	 */
-	ValueT getValue(Object t)
+	ValueT getValue(OutputObject t)
 	{
 		/*
 		 * Lazy caching should yield the best results.
@@ -68,11 +67,16 @@ public:
 	/**
 	 * Implements the value extraction via polymorphism.
 	 */
-	virtual ValueT getValueImpl(Object object) = 0;
+	virtual ValueT getValueImpl(OutputObject object) = 0;
 
 	virtual ~Accessor()
 	{
 
+	}
+
+	IdType getName()
+	{
+		return name;
 	}
 private:
 
@@ -91,6 +95,7 @@ typedef Accessor<float,Flow*> AccessorT;
 class DelayAccessor:public AccessorT
 {
 public:
+
 	DelayAccessor()
 	{
 

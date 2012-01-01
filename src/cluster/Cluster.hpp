@@ -10,40 +10,25 @@
 
 #include "../commons/Lock.hpp"
 
-#include <vector>
+#include <map>
 
 using namespace std;
 
 template <class OutputObject, class Accessor> class Cluster
 {
-	typedef typename Accessor::ValueType ValueType;
-
 private:
-	 map<int,ValueType>* accessors_;
-	 map<int, OutputObject*> items_;
-
+	map<typename OutputObject::IdType, OutputObject*> objects;
+	map<typename Accessor::IdType,typename Accessor::ValueType> center;
 public:
-
-
-	Cluster(vector<Accessor*>& accessors, OutputObject* obj)
+	map<typename OutputObject::IdType, OutputObject*>& getObjects()
 	{
-		vector<Accessor*>::iterator it;
-
-		for(it = accessors.begin(); it < accessors.end(); ++it)
-		{
-			Accessor* accessor = it;
-			ValueType value = accessor->getValue(obj);
-			accessors[accessor->getId()] = value;
-			items_[obj->getId()] = obj;
-		}
-		//TODO: For each accessor get the obj value to match.
+		return *&objects;
 	}
 
-	void regenerateCenter()
+	map<typename Accessor::IdType, typename Accessor::ValueType>& getCenter()
 	{
-
+		return *&center;
 	}
-
 };
 
 

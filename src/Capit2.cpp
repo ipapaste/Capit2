@@ -13,12 +13,14 @@
 #include "Thread.hpp"
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
-#include "cluster/Preproccessor.hpp"
+#include "cluster/Preprocessor.hpp"
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <string>
 #include "ParameterFactory.hpp"
 #include "cluster/Accessor.hpp"
+#include "cluster/ClusterManager.hpp"
+#include "cluster/Cluster.hpp"
 
 using namespace std;
 using namespace boost;
@@ -83,7 +85,7 @@ int main(int argc, char* argv[])
 		/**
 		 * Initialize the command line manager.
 		 */
-		TCLAP::CmdLine cmd("Runs the capit replay system.", ' ', "0.9");
+		TCLAP::CmdLine cmd("Runs the capit emulation system.", ' ', "0.9");
 
 		/**
 		 * Argument defining the IP of the targeted host.
@@ -97,10 +99,17 @@ int main(int argc, char* argv[])
 		/**
 		 * Argument defining the pcap file to be replayed.
 		 */
-		TCLAP::ValueArg<std::string> logFile("f", "logFile",
+		TCLAP::ValueArg<std::string> logFile("s", "logFile",
 				"The path to the pcap file to replay. If more than one files "
 						"are needed, separate them with +.", true,
 				"data/sample.pcap", "string");
+
+	    /**
+		 * Argument defining the pcap file to be replayed.
+	     */
+				TCLAP::ValueArg<std::string> filter("f", "filter",
+						"Specify a pcap filter expression for the sources.", false,
+						"NONE", "string");
 
 		/**
 		* Argument defining the pcap file to be replayed.
@@ -123,60 +132,33 @@ int main(int argc, char* argv[])
 				"The number of clusters to use.", false,
 				3, "string");
 
-		/*
-		 * Add the target IP Argument to the manager.
-		 */
 		cmd.add(serverIp);
-
-		/**
-		 * Add the pcap file Argument to the manager.
-		 */
 		cmd.add(logFile);
-
-
-		/**
-		 * Add the mode Argument to the manager.
-		 */
 		cmd.add(mode);
-
 		cmd.add(clusterSize);
-
 		cmd.add(parameters);
-
+		cmd.add(filter);
 
 		/**
 		 * Parse the argc/argv array.
 		 */
 		cmd.parse(argc, argv);
 
-		/**
-		 * Parse the target IP.
-		 */
 		std::string targetIp = serverIp.getValue();
-
-		/**
-		 * Parse the pcap file.
-		 */
 		std::string files = logFile.getValue();
-
-		/**
-		 * Parse the application mode.
-		 */
+		std::string filterValue = filter.getValue();
 		std::string appMode = mode.getValue();
 
-		if(appMode.compare("replay") && appMode.compare("cluster"))
+		if(appMode.compare("replay") && appMode.compare("cluster") && appMode.compare("generation"))
 		{
-			cout<< "Mode can only be replay or cluster." << endl;
+			cout<< "Mode can only take one of the following values: replay, cluster, generation" << endl;
 			exit(0);
 		}
-
-		cout << "Running for target: " << targetIp << " with log: " << files
-				<< " Mode is:" << appMode <<endl;
 
 		/**
 		 * Lazy load and initialize the client manager singleton.
 		 */
-		ClientManagerInstance::getInstance()->setTargetIp(&targetIp);
+		ClientManagerInstance::getInstance()->setTargetIp(targetIp);
 
 		char_separator<char> sep("+");
 
@@ -188,6 +170,17 @@ int main(int argc, char* argv[])
 			{
 				PacketSource* source = new PacketSource();
 				source->openSource(t.c_str());
+
+				if(filterValue.compare("NONE") != 0)
+				{
+
+					source->setFilter(filterValue);
+				}
+				else
+				{
+					cout << "No filter specified." << endl;
+				}
+
 				ClientManagerInstance::getInstance()->registerSource();
 				ThreadShell::schedule(source);
 			}
@@ -222,18 +215,22 @@ int main(int argc, char* argv[])
 			}
 
 			PcapAdapterShell shell;
-			FTPFlowPreproc proc;
+
+			FlowPreproc proc;
+
 
 			shell.openSource(files.c_str());
 
 			Packet* p = shell.getNextPacket();
+
 			while (p != NULL)
 			{
 				proc.readInputObject(p);
 				p = shell.getNextPacket();
 			}
-			map<string,Flow*>::iterator it;
-			map<string,Flow*>& objects = *proc.getOutputObjects();
+
+			map<Flow::IdType,Flow*>::iterator it;
+			map<Flow::IdType,Flow*>& objects = *proc.getOutputObjects();
 
 			DelayAccessor ac;
 
@@ -247,21 +244,24 @@ int main(int argc, char* argv[])
 
 				for(in = data.begin(); in != data.end(); ++in)
 				{
-					cout << *in->second->getPayload() << endl;
+					//cout << *in->second->getPayload() << endl;
 				}
 
 			}
 
-			//cout << "Hi:"<< objects.begin()->second->getInputObjects()->begin()->second->getPacketId() << endl;
+			KMeansManager kms(1,&proc);
+			kms.addAccessor(&ac);
+			kms.cluster();
+
 			exit(0);
 		}
 
 		/**
 		 * Wait for all threads to end before shutting down.
 		 */
-
 		ThreadShell::join();
-	} catch (TCLAP::ArgException &e)
+	}
+	catch (TCLAP::ArgException &e)
 	{
 		std::cerr << "error: " << e.error() << " for arg " << e.argId()
 				<< std::endl;

@@ -35,6 +35,11 @@ public:
 
 	virtual void sendData(u_char* data) = 0;
 
+	virtual ~AbstractSocket()
+	{
+
+	}
+
 };
 
 class BoostSocket: public AbstractSocket

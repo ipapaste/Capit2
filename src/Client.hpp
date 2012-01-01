@@ -65,9 +65,9 @@ public:
 
 		AbstractApplication* app;
 
-		if (!hasItem(&serverPort))
+		if (!hasItem(serverPort))
 		{
-			ApplicationAccessor* accessor = ApplicationFactoryInstance::getInstance()->getItem(&serverPort);
+			ApplicationAccessor* accessor = ApplicationFactoryInstance::getInstance()->getItem(serverPort);
 
 			if(accessor == NULL)
 			{
@@ -83,13 +83,13 @@ public:
 				return;
 			}
 
-			addItem(&serverPort, app);
+			addItem(serverPort, app);
 
 			log("Generating a new application", 4);
 		}
 		else
 		{
-			app = getItem(&serverPort);
+			app = getItem(serverPort);
 		}
 		app->accept(p);
 	}
