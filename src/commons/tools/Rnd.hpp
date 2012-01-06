@@ -15,6 +15,8 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include "../Singleton.hpp"
+
 double gen_normal(void)
 {
   boost::variate_generator<boost::mt19937, boost::normal_distribution<> >
@@ -47,6 +49,8 @@ public:
 		return getInt(0,end);
 	}
 };
+
+typedef Singleton<Rnd> Rand;
 
 
 #endif /* RND_HPP_ */

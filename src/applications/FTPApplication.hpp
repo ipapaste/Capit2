@@ -9,40 +9,68 @@
 #define FTPAPPLICATION_HPP_
 
 #include "../AbstractApplication.hpp"
+#include "model/Command.hpp"
+#include "model/Credential.hpp"
+#include "model/SessionState.hpp"
+#include "commons/tools/Rnd.hpp"
 
-class FTPApplication: public AbstractApplication
+class FTPApplication: public AbstractApplication, public SessionState
 {
 private:
-	int appState;
+
+	static vector<Credential*> credentials;
+	static queue<Command*> commands;
+
+	Credential* credential;
+
 public:
-	static const int STATE_USERNAME_PENDING = 0;
-	static const int STATE_PASSWORD_PENDING = 1;
-	static const int STATE_READY = 3;
+
+	FTPApplication()
+	{
+		credential = new Credential("issle1", "kaiap4981");
+	}
 
 	void accept(AbstractApplicationType::PacketType& packet)
 	{
-		switch (appState)
+		switch (SessionState::getSessionState())
 		{
 		case STATE_READY:
 		{
-			//TODO: Forward the packet to preprocessors (?).
+			AbstractApplication::accept(packet);
 			break;
 		}
 		case STATE_USERNAME_PENDING:
 		{
-			//TODO: Drop this packet and send a USER <param> packet.
-			appState = STATE_PASSWORD_PENDING;
+			if(!packet.getPayload()->find("USER"))
+			{
+				string* payload = new string("USER");
+				payload->append(" ");
+				payload->append(credential->getUsername());
+				payload->append(" \n");
+				packet.setPayload(payload);
+			}
+
+			AbstractApplication::accept(packet);
+			SessionState::setPasswordPending();
 			break;
 		}
 		case STATE_PASSWORD_PENDING:
 		{
-			//TODO: Drop this packet and send a PASS <param> packet.
-			appState = STATE_READY;
+			if(!packet.getPayload()->find("PASS"))
+			{
+				string* payload = new string("USER");
+				payload->append(" ");
+				payload->append(credential->getUsername());
+				payload->append(" \n");
+				packet.setPayload(payload);
+			}
+
+			AbstractApplication::accept(packet);
+			SessionState::setReady();
 			break;
 		}
 		}
 
-		AbstractApplication::accept(packet);
 	}
 };
 

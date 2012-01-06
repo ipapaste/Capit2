@@ -22,6 +22,8 @@
 #include "cluster/ClusterManager.hpp"
 #include "cluster/Cluster.hpp"
 
+#include "applications/FTPApplication.hpp"
+
 using namespace std;
 using namespace boost;
 
