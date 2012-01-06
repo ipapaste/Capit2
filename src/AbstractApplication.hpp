@@ -113,7 +113,7 @@ public:
 	 * this method to send packets to this Application. The
 	 * packets are stored in the Queue policy.
 	 */
-	void accept(AbstractApplicationType::PacketType& packet)
+	virtual void accept(AbstractApplicationType::PacketType& packet)
 	{
 		add(&packet);
 
