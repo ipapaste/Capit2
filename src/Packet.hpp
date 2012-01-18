@@ -21,10 +21,10 @@ public:
 	typedef int IdType;
 private:
 
-	string* sourceIp;
-	string* destinationIp;
-	string* payload;
-	string* fileName;
+	string* sourceIp_;
+	string* destinationIp_;
+	string* payload_;
+	string* fileName_;
 
 	int sourcePort;
 	int destinationPort;
@@ -41,18 +41,19 @@ private:
 public:
 	Packet(const timeval& ts)
 	{
-		sourceIp = NULL;
-		destinationIp = NULL;
-		payload = NULL;
+		sourceIp_ = NULL;
+		destinationIp_ = NULL;
+		payload_ = NULL;
+		fileName_ = NULL;
 		timestamp = Tools::getTimeInMillis(&ts);
 		setPacketId(getNextId());
 	}
 
 	~Packet()
 	{
-		delete sourceIp;
-		delete destinationIp;
-		delete payload;
+		delete sourceIp_;
+		delete destinationIp_;
+		delete payload_;
 	}
 
 	static int getNextId()
@@ -63,7 +64,7 @@ public:
 
     const string* getDestinationIp() const
     {
-        return destinationIp;
+        return destinationIp_;
     }
 
     int getDestinationPort() const
@@ -73,12 +74,12 @@ public:
 
     const string* getPayload() const
     {
-        return payload;
+        return payload_;
     }
 
     const string* getSourceIp() const
     {
-        return sourceIp;
+        return sourceIp_;
     }
 
     int getSourcePort() const
@@ -93,7 +94,7 @@ public:
 
     void setDestinationIp(string *destinationIp)
     {
-        this->destinationIp = destinationIp;
+        this->destinationIp_ = destinationIp;
     }
 
     void setDestinationPort(int destinationPort)
@@ -101,14 +102,16 @@ public:
         this->destinationPort = destinationPort;
     }
 
-    void setPayload(string *payload)
+    void setPayload(string* payload)
     {
-        this->payload = payload;
+    	delete payload_;
+        this->payload_ = payload;
     }
 
-    void setSourceIp(string *sourceIp)
+    void setSourceIp(string* sourceIp)
     {
-        this->sourceIp = sourceIp;
+    	delete sourceIp_;
+        this->sourceIp_ = sourceIp;
     }
 
     void setSourcePort(int sourcePort)
@@ -136,12 +139,13 @@ int Packet::idCounter=0;
 
 const string* Packet::getFileName() const
 {
-    return fileName;
+    return fileName_;
 }
 
-void Packet::setFileName(string *fileName)
+void Packet::setFileName(string* fileName)
 {
-    this->fileName = fileName;
+	delete fileName_;
+    this->fileName_ = fileName;
 }
 
 

@@ -8,61 +8,67 @@
 #ifndef SESSIONSTATE_HPP_
 #define SESSIONSTATE_HPP_
 
-/**
- * A SessionState object represents the authentication status
- * of an Application. Since most common protocols use a username
- * and password combination this class ensures the correct tran-
- * sition between states. Whenever an application is created it's
- * state is set to pending username, meaning that the application
- * needs a username to be provided to start accepting packets.
- *
- * When a username is provided the state changes to password pending
- * meaning that we are waiting for a password. After that is done
- * the application can start receiving and forwarding packets.
- */
-class SessionState
+#include "../../Node.hpp"
+
+class SessionState: public AbstractNode
 {
 private:
-	int sessionState;
+	float delayMean;
+	float delayStd;
+	int count;
+	queue<AbstractNode::PacketType*> packets;
 
 public:
-	static const int STATE_USERNAME_PENDING = 0;
-	static const int STATE_PASSWORD_PENDING = 1;
-	static const int STATE_READY = 3;
-
-	SessionState()
+	void accept(AbstractNode::PacketType& packet)
 	{
-		sessionState = STATE_USERNAME_PENDING;
+		count++;
+		packets.push(&packet);
 	}
 
-	int getSessionState()
+	void calc()
 	{
-		return sessionState;
-	}
-
-	bool setReady()
-	{
-		if(sessionState == STATE_PASSWORD_PENDING)
+		Packet* previousPacket = NULL;
+		for(int i = 0; i < packets.size(); i++)
 		{
-			sessionState = STATE_READY;
-			return true;
+			if(previousPacket == NULL)
+				previousPacket = packets[i];
+			else
+			{
+				Packet* currentPacket = packets[i];
+				delayMean += (currentPacket->getTimestamp() - previousPacket->getTimestamp())/count;
+			}
 		}
-
-		return false;
-	}
-
-	bool setPasswordPending()
-	{
-		if(sessionState == STATE_USERNAME_PENDING)
-		{
-			sessionState = STATE_PASSWORD_PENDING;
-			return true;
-		}
-
-		return false;
 	}
 };
 
+class Flow: public AbstractNode
+{
+private:
+	int sessionType_;
+	vector<>
+	map<int,SessionState*> states;
+public:
+	void accept(AbstractNode::PacketType& packet)
+	{
+		int sessionType = getSessionType(packet);
 
+		SessionState* state = states[sessionType];
+
+		state->accept(packet);
+
+		if(sessionType == sessionType_)
+		{
+
+		}
+	}
+
+	int getSessionType(AbstractNode::PacketType& packet)
+	{
+		if(packet.getPayload() == "USER")
+		{
+
+		}
+	}
+};
 
 #endif /* SESSIONSTATE_HPP_ */

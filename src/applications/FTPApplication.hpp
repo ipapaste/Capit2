@@ -13,6 +13,7 @@
 #include "model/Credential.hpp"
 #include "model/SessionState.hpp"
 #include "commons/tools/Rnd.hpp"
+#include "commons/XMLParser.hpp"
 
 class FTPApplication: public AbstractApplication, public SessionState
 {
@@ -58,7 +59,7 @@ public:
 		{
 			if(!packet.getPayload()->find("PASS"))
 			{
-				string* payload = new string("USER");
+				string* payload = new string("PASS");
 				payload->append(" ");
 				payload->append(credential->getUsername());
 				payload->append(" \n");
@@ -71,6 +72,11 @@ public:
 		}
 		}
 
+	}
+
+	void loadData(typename XMLParser::TreeType& tree, typename XMLParser::TreeType::value_type const& node)
+	{
+		cout << "Loads ftp data." << endl;
 	}
 };
 

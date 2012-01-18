@@ -13,16 +13,11 @@
 #include "Thread.hpp"
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
-#include "cluster/Preprocessor.hpp"
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <string>
-#include "ParameterFactory.hpp"
-#include "cluster/Accessor.hpp"
-#include "cluster/ClusterManager.hpp"
-#include "cluster/Cluster.hpp"
-
-#include "applications/FTPApplication.hpp"
+#include "FlowManager.hpp"
+#include "FlowGroup.hpp"
 
 using namespace std;
 using namespace boost;
@@ -114,31 +109,16 @@ int main(int argc, char* argv[])
 						"NONE", "string");
 
 		/**
-		* Argument defining the pcap file to be replayed.
-		*/
-		TCLAP::ValueArg<std::string> parameters("p", "cluster_parameters",
-				"Specify the list of clustering parameters to use.", false,
-				"FTP", "string");
-
-		/**
 		* Argument defining application mode.
 		*/
 		TCLAP::ValueArg<std::string> mode("m", "mode",
 				"The execution mode of the application. Modes can be replay and cluster", true,
 				"replay", "string");
 
-		/**
-		* Argument defining application mode.
-		*/
-		TCLAP::ValueArg<int> clusterSize("c", "cluster_number",
-				"The number of clusters to use.", false,
-				3, "string");
 
 		cmd.add(serverIp);
 		cmd.add(logFile);
 		cmd.add(mode);
-		cmd.add(clusterSize);
-		cmd.add(parameters);
 		cmd.add(filter);
 
 		/**
@@ -189,73 +169,32 @@ int main(int argc, char* argv[])
 		}
 		else if(!appMode.compare("cluster"))
 		{
-			int clusterNo = clusterSize.getValue();
+			BOOST_FOREACH(string t, tokens)
+						{
+							PacketSource* source = new PacketSource();
+							source->openSource(t.c_str());
 
-			if(clusterNo <= 1)
-			{
-				cout << "Cluster number must be greater than one." << endl;
-				exit(0);
-			}
+							if(filterValue.compare("NONE") != 0)
+							{
 
+								source->setFilter(filterValue);
+							}
+							else
+							{
+								cout << "No filter specified." << endl;
+							}
 
-			string params = parameters.getValue();
+							ClientManagerInstance::getInstance()->registerSource();
+							FlowManager* manager = new FlowManager();
+							Packet* packet = NULL;
+							while((packet = source->getNextPacket()) != NULL)
+							{
+								manager->accept(*packet);
+							}
 
-			char_separator<char> sepp("+");
-
-			tokenizer<char_separator<char> > tokens(params, sepp);
-
-			int size = 0;
-			BOOST_FOREACH(string tt, tokens)
-			{
-				size++;
-			}
-
-			if(size <2)
-			{
-				cout <<"At least two parameter must be specified."<< endl;
-				exit(0);
-			}
-
-			PcapAdapterShell shell;
-
-			FlowPreproc proc;
-
-
-			shell.openSource(files.c_str());
-
-			Packet* p = shell.getNextPacket();
-
-			while (p != NULL)
-			{
-				proc.readInputObject(p);
-				p = shell.getNextPacket();
-			}
-
-			map<Flow::IdType,Flow*>::iterator it;
-			map<Flow::IdType,Flow*>& objects = *proc.getOutputObjects();
-
-			DelayAccessor ac;
-
-			for(it = objects.begin(); it != objects.end(); ++it)
-			{
-				cout <<"Flow Average Delay:" << ac.getValue(it->second)<< endl;
-				cout << it->first << endl;
-				map<int,Packet*>& data = *it->second->getInputObjects();
-
-				map<int,Packet*>::iterator in;
-
-				for(in = data.begin(); in != data.end(); ++in)
-				{
-					//cout << *in->second->getPayload() << endl;
-				}
-
-			}
-
-			KMeansManager kms(1,&proc);
-			kms.addAccessor(&ac);
-			kms.cluster();
-
-			exit(0);
+							manager->calc();
+							exit(0);
+						}
 		}
 
 		/**

@@ -16,7 +16,7 @@
 
 #include "AbstractApplication.hpp"
 #include "applications/HTTPApplication.hpp"
-#include "applications/FTPApplication.hpp"
+//#include "applications/FTPApplication.hpp"
 
 /**
  * The AbstractAccessor provides access to an AbstractApplication pointer.
@@ -30,7 +30,7 @@ typedef Container<int,ApplicationAccessor*,NoLock> FactoryPolicy;
 
 
 typedef ObjectAccessor<HTTPApplication,ApplicationAccessor> HTTPAccessor;
-typedef ObjectAccessor<FTPApplication, ApplicationAccessor> FTPAccessor;
+typedef ObjectAccessor<HTTPApplication, ApplicationAccessor> FTPAccessor;
 
 
 class ApplicationFactory:public FactoryPolicy
