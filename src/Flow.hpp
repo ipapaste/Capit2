@@ -14,10 +14,93 @@
 #include "Packet.hpp"
 #include "Node.hpp"
 #include "FlowState.hpp"
-#include "LoginUState.hpp"
-#include "CommandState.hpp"
 #include "FlowGroup.hpp"
+#include "commons/Singleton.hpp"
 using namespace std;
+
+
+
+class FlowType
+{
+	string name_;
+	int port_;
+	list<FlowState*> states;
+public:
+	FlowType(string name, int port):name_(name)
+	{
+		port_ = port;
+	}
+
+	int size()
+	{
+		return states.size();
+	}
+
+	FlowState* getFlowStateForPacket(Packet& packet)
+	{
+		FlowState* state = NULL;
+		BOOST_FOREACH(FlowState* st, states)
+		{
+			state = st->getState(packet);
+			if(state != NULL)
+				return state;
+		}
+
+		return state;
+	}
+
+	void addState(FlowState* state)
+	{
+		states.push_front(state);
+	}
+
+	int getPort()
+	{
+		return port_;
+	}
+
+	string getName()
+	{
+		return name_;
+	}
+
+	void print()
+	{
+		BOOST_FOREACH(FlowState* state, states)
+		{
+			state->print();
+		}
+	}
+
+};
+
+class Flows
+{
+private:
+	map<int,FlowType*> flowTypes;
+public:
+
+	void addType(int id, FlowType* type)
+	{
+		flowTypes[id] = type;
+	}
+
+	FlowType* getType(int id)
+	{
+		FlowType* type = NULL;
+
+		type = flowTypes[id];
+
+		return type;
+	}
+
+	int size()
+	{
+		return flowTypes.size();
+	}
+};
+
+typedef Singleton<Flows> FlowsInstance;
 
 /**
  * A Flow is an Object that consists of all the packets
@@ -47,8 +130,10 @@ public:
 		flowId = s;
 		sourcePort_ = sourcePort;
 		destinationPort_ = destinationPort;
-		group = new FlowGroup(2);
-		types.resize(2);
+
+		FlowType* type = FlowsInstance::getInstance()->getType(destinationPort);
+		group = new FlowGroup(type->size());
+		types.resize(type->size());
 	}
 
 	static string getFlowId(const string& srcIp, const string& dstIp, int srcPort, int dstPort)
@@ -72,6 +157,8 @@ public:
 	void accept(Packet& packet)
 	{
 		FlowState* state = getFlowState(packet);
+		if(state == NULL)
+			return;
 
 		if(activeState != NULL)
 			types[activeState->getId()]++;
@@ -87,17 +174,13 @@ public:
 			int temp = group->getProbability(activeState->getId(), state->getId());
 			temp++;
 			group->setProbability(activeState->getId(), state->getId(),temp);
-
 			activeState = state;
 			flowStates.push_back(activeState);
-			cout << "Changing state." << endl;
 		}
 		else if(activeState->getId() == state->getId())
 		{
 			int temp = group->getProbability(activeState->getId(), state->getId());
 			temp++;
-
-			cout << "Found " << activeState->getId() << " "<< state->getId() << endl;
 			group->setProbability(activeState->getId(), state->getId(),temp);
 		}
 
@@ -108,13 +191,12 @@ public:
 	{
 		FlowState* state = NULL;
 
-		if(packet.getPayload()->find("PASS") != string::npos || packet.getPayload()->find("USER") != string::npos)
-		{
-			cout << "Found logins tate." << endl;
-			state = new LoginUState();
-		}
-		else
-			state = new CommandState();
+		FlowType* type =  FlowsInstance::getInstance()->getType(packet.getDestinationPort());
+
+		if(type == NULL)
+			return state;
+
+		state = type->getFlowStateForPacket(packet);
 
 		return state;
 	}
@@ -128,9 +210,10 @@ public:
 		}
 
 		cout << "Transition matrix: " << endl;
-		for(int i = 0; i<2; i++ )
+		int size = FlowsInstance::getInstance()->size();
+		for(int i = 0; i<types.size(); i++ )
 		{
-			for(int j = 0; j < 2; j++)
+			for(int j = 0; j < types.size(); j++)
 			{
 				float oldProb = group->getProbability(i,j);
 
@@ -141,7 +224,7 @@ public:
 
 				group->setProbability(i,j,oldProb/divider);
 
-				cout << group->getProbability(i,j) << " ";
+				cout << setw(5) << group->getProbability(i,j) << " ";
 			}
 
 			cout << endl;

@@ -18,7 +18,7 @@
 #include <string>
 #include "FlowManager.hpp"
 #include "FlowGroup.hpp"
-
+#include "CapitXMLParser.hpp"
 using namespace std;
 using namespace boost;
 
@@ -169,32 +169,34 @@ int main(int argc, char* argv[])
 		}
 		else if(!appMode.compare("cluster"))
 		{
+			CapitXMLParser* p = new CapitXMLParser("data/config/markov.xml");
+			p->read();
+
 			BOOST_FOREACH(string t, tokens)
-						{
-							PacketSource* source = new PacketSource();
-							source->openSource(t.c_str());
+			{
+				PacketSource* source = new PacketSource();
+				source->openSource(t.c_str());
 
-							if(filterValue.compare("NONE") != 0)
-							{
+				if(filterValue.compare("NONE") != 0)
+				{
+					source->setFilter(filterValue);
+				}
+				else
+				{
+					cout << "No filter specified." << endl;
+				}
 
-								source->setFilter(filterValue);
-							}
-							else
-							{
-								cout << "No filter specified." << endl;
-							}
+				ClientManagerInstance::getInstance()->registerSource();
+				FlowManager* manager = new FlowManager();
+				Packet* packet = NULL;
+				while((packet = source->getNextPacket()) != NULL)
+				{
+					manager->accept(*packet);
+				}
 
-							ClientManagerInstance::getInstance()->registerSource();
-							FlowManager* manager = new FlowManager();
-							Packet* packet = NULL;
-							while((packet = source->getNextPacket()) != NULL)
-							{
-								manager->accept(*packet);
-							}
-
-							manager->calc();
-							exit(0);
-						}
+				manager->calc();
+				exit(0);
+			}
 		}
 
 		/**

@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 #include <sys/time.h>
-
+#include "commons/Tools.hpp"
 #include "commons/MemoryPool.hpp"
 
 using namespace std;

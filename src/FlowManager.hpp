@@ -24,6 +24,10 @@ public:
 			return;
 		if(obj.getPayload()->size()<1)
 			return;
+
+		if(FlowsInstance::getInstance()->getType(obj.getDestinationPort()) ==NULL)
+			return;
+
 		string id = Flow::getFlowId(*obj.getSourceIp(), *obj.getDestinationIp(), obj.getSourcePort(), obj.getDestinationPort());
 
 		Flow* f = NULL;
@@ -38,7 +42,6 @@ public:
 			f = flows[id];
 
 		}
-
 		f->accept(obj);
 	}
 

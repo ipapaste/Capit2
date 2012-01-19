@@ -1,3 +1,5 @@
+#ifndef CAPIT_XML_PARSER_
+#define CAPIT_XML_PARSER_
 /*
  * XmlTest.cpp
  *
@@ -5,48 +7,12 @@
  *      Author: issle
  */
 
-#include "../XMLParser.hpp"
-#include "../../FlowState.hpp"
+#include "commons/XMLParser.hpp"
+#include "FlowState.hpp"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include "Flow.hpp"
 using namespace std;
-
-class Application
-{
-	string name_;
-	int port_;
-	list<FlowState*> states;
-public:
-	Application(string name, int port):name_(name)
-	{
-		port_ = port;
-	}
-
-	void addState(FlowState* state)
-	{
-		states.push_front(state);
-	}
-
-	int getPort()
-	{
-		return port_;
-	}
-
-	string getName()
-	{
-		return name_;
-	}
-
-	void print()
-	{
-		cout << "Application: " << name_ << " Port: " << port_ << endl;
-		BOOST_FOREACH(FlowState* state, states)
-		{
-			state->print();
-		}
-	}
-
-};
 
 class CapitXMLParser: public XMLParser
 {
@@ -64,7 +30,8 @@ public:
 			string appName = application.second.get("<xmlattr>.name","");
 			int appPort = boost::lexical_cast<int, std::string>(application.second.get("<xmlattr>.port",""));
 
-			Application* app = new Application(appName, appPort);
+			FlowType* app = new FlowType(appName, appPort);
+			FlowsInstance::getInstance()->addType(appPort, app);
 
 			BOOST_FOREACH( ptree::value_type const& component, application.second )
 			{
@@ -89,17 +56,8 @@ public:
 
 				}
 			}
-
-			app->print();
-
 		}
 	}
 };
 
-int main()
-{
-	CapitXMLParser* p = new CapitXMLParser("build.xml");
-	p->read();
-	return 0;
-}
-
+#endif

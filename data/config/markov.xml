@@ -1,0 +1,26 @@
+<capit>
+	<application name="ftp" port="21">
+		<state id="0" name="login_u">
+			<packet name="USER" value="USER &var \n"/>
+		</state>
+		<state id="1" name="login_p">
+			<packet name="PASS" value="PASS &var \n"/>
+		</state>
+		<state id="2" name="command">
+			<packet name="MK_DIR" value="MKDIR &var \n"/>
+			<packet name="RM_DIR" value="RMDIR &var \n"/>
+			<packet name="DELETE" value="DELETE &var \n"/>
+			<packet name="GET" value="GET &var \n"/>
+			<packet name="DGET" value="GET &var &var  \n"/>
+			<packet name="HELP" value="HELP \n"/>
+			<packet name="LS" value="LS \n"/>
+			<packet name="LCD" value="LCD \n"/>
+			<packet name="PWD" value="PWD \n"/>
+			<packet name="MKD" value="MKD \n"/>
+			<packet name="SYS" value="SYS \n"/>
+		</state>
+		<state id="3" name="quit">
+			<command name="QUIT" value="QUIT \n"/>
+		</state>
+	</application>
+</capit>

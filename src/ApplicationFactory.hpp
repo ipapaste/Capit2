@@ -38,7 +38,7 @@ class ApplicationFactory:public FactoryPolicy
 public:
 	ApplicationFactory()
 	{
-		int httpPort =80;
+		int httpPort= 80;
 		int ftpPort = 21;
 		addItem(httpPort, new HTTPAccessor);
 		addItem(ftpPort, new FTPAccessor);
