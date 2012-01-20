@@ -16,14 +16,26 @@
 #include "FlowState.hpp"
 #include "FlowGroup.hpp"
 #include "commons/Singleton.hpp"
+#include "Thread.hpp"
+#include "commons/tools/Rnd.hpp"
 using namespace std;
 
 
-
+/*
+ * Each flow contains a specific set of States that
+ * it can transit to thus a FlowType is defined based
+ * on the protocol that a Flow is based on.
+ */
 class FlowType
 {
 	string name_;
 	int port_;
+
+	/*
+	 * A list of all the possible states that the flow
+	 * can access. Should be used for new FlowState
+	 * generation.
+	 */
 	list<FlowState*> states;
 public:
 	FlowType(string name, int port):name_(name)
@@ -36,6 +48,10 @@ public:
 		return states.size();
 	}
 
+	/*
+	 * Returns the state in which the input packet belongs.
+	 * Returns NULL if no state exists.
+	 */
 	FlowState* getFlowStateForPacket(Packet& packet)
 	{
 		FlowState* state = NULL;
@@ -74,6 +90,11 @@ public:
 
 };
 
+/**
+ * Class that defines the list of possible FlowTypes
+ * that exist in Capit2. Gets populated from persistent
+ * data.
+ */
 class Flows
 {
 private:
@@ -115,11 +136,10 @@ private:
 	int destinationPort_;
 
 	map<int,Packet*> packets;
-
+protected:
 	FlowGroup* group;
 
 	vector<int> types;
-
 	list<FlowState*> flowStates;
 
 	FlowState* activeState;
@@ -156,19 +176,28 @@ public:
 
 	void accept(Packet& packet)
 	{
+		//Get the state that this packet defines.
 		FlowState* state = getFlowState(packet);
+
+		//If no state is defined ignore the packet.
 		if(state == NULL)
 			return;
 
+		//If there is an activeState, post-increase
+		//its occurrence.
 		if(activeState != NULL)
 			types[activeState->getId()]++;
 
+		//If there is no active state, set this state
+		//as the active one and store it in the states
+		//of this Flow.
 		if(activeState == NULL)
 		{
 			activeState = state;
-
 			flowStates.push_back(activeState);
 		}
+		//If we have a state transition, store it and
+		//change the state.
 		else if(activeState->getId() != state->getId())
 		{
 			int temp = group->getProbability(activeState->getId(), state->getId());
@@ -177,6 +206,8 @@ public:
 			activeState = state;
 			flowStates.push_back(activeState);
 		}
+		//If we have a state repetition, store it and
+		//keep the same test.
 		else if(activeState->getId() == state->getId())
 		{
 			int temp = group->getProbability(activeState->getId(), state->getId());
@@ -184,6 +215,7 @@ public:
 			group->setProbability(activeState->getId(), state->getId(),temp);
 		}
 
+		//Feed the packet to the valid state.
 		activeState->accept(packet);
 	}
 
@@ -231,6 +263,59 @@ public:
 		}
 
 
+	}
+};
+
+class ActiveFlow: public Flow, public ThreadShell
+{
+public:
+	ActiveFlow(Flow& flow):Flow(flow)
+	{
+		BOOST_FOREACH(FlowState* state, flowStates)
+		{
+			state->setTransitions(group);
+			if(state->getId() == 0)
+			{
+				activeState = state;
+			}
+		}
+	}
+
+	void run()
+	{
+		if(activeState == NULL)
+		{
+			cout << "NULL activeState found." << endl;
+			return;
+		}
+
+		//TODO: Send the packet.
+
+		int dice = Rand::getInstance()->getInt(1000);
+
+
+		int stateId = activeState->getTransitionId(dice);
+
+		cout << "Dice: " << dice << " from id: " << activeState->getId()<<" to id: " << stateId << endl;
+
+		if(stateId == -1)
+		{
+			cout << "No more states to move to." << endl;
+			return;
+		}
+
+
+		BOOST_FOREACH(FlowState* state, flowStates)
+		{
+			if(state->getId() == stateId)
+			{
+				activeState = state;
+				break;
+			}
+		}
+
+
+		ThreadShell::schedule(*this,1000);
 	}
 };
 

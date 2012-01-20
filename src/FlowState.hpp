@@ -15,31 +15,123 @@
 #include "Packet.hpp"
 #include <boost/foreach.hpp>
 #include "applications/model/Command.hpp"
+#include "FlowGroup.hpp"
 using namespace std;
 
+/**
+ * This class represents a continuous sequence of packets
+ * inside a Flow that are grouped together by some well
+ * defined property and time restriction.
+ *
+ * A Flow state starts with the first packet that falls
+ * into the accepted property range and ends with the first
+ * packet that does not fall into this flow state. The last
+ * packet is excluded from the flow state.
+ */
 class FlowState: public AbstractNode
 {
 private:
+
+	/*
+	 * Each FlowState has an id that represents
+	 * the type of the FlowState and not the Flow
+	 * State itself. Two FlowStates can have the
+	 * same id_ when they belong in the same type
+	 * of FlowState
+	 */
 	int id_;
+
+	/*
+	 * The mean inter-packet delay in milliseconds.
+	 */
 	float meanDelay;
+
+	/*
+	 * The std inter-packet delay in milliseconds.
+	 */
 	float stdDelay;
+
+	/*
+	 * The number of packets contained in this
+	 * FlowState.
+	 */
 	int count;
+
 	list<Packet*> packets;
+public:
+	vector<int> transitions;
+
+	int getTransitionId(int index)
+	{
+		return transitions[index];
+	}
+
+	void setTransitions(FlowGroup* group)
+	{
+		vector<float> trans = group->getSubGroup(id_);
+
+		transitions.resize(1100);
+
+		for(int i =0; i< 1100; i++)
+		{
+			transitions[i] = -1;
+		}
+
+		int index = 0;
+		for(int i = 0; i < trans.size(); i++)
+		{
+			float prob = trans[i];
+
+
+
+			int count = 0;
+
+			count = index + 1000*prob;
+
+			for(int j = index; j < count; j++ )
+			{
+				transitions[j] = i;
+			}
+
+			index = count+1;
+		}
+
+		cout << "Count is: " << index << endl;
+	}
+private:
+	/*
+	 * A template packet command list that define
+	 * the FlowState type.
+	 */
 	list<Command*> commands;
+
 	string name_;
 
+	/*
+	 * Should be used to generate new flow state
+	 * objects.
+	 */
 	FlowState* getNewState()
 	{
 		return new FlowState(*this);
 	}
 public:
 
+	/*
+	 * Should be used when reading the FlowState
+	 * types from the persistent data.
+	 */
 	FlowState(int id,string name):name_(name)
 	{
 		id_ = id;
 		count = 0;
 	}
 
+	/*
+	 * Generates a FlowState object if the input
+	 * packet belongs in that state. Returns NULL
+	 * if the packet does not belong to this state.
+	 */
 	FlowState* getState(Packet& packet)
 	{
 		BOOST_FOREACH(Command* command, commands)

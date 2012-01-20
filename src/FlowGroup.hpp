@@ -36,6 +36,10 @@ public:
 		}
 	}
 
+	vector<float> getSubGroup(int i)
+	{
+		return transmitionMatrix[i];
+	}
 	void setProbability(int i , int j, float value)
 	{
 		transmitionMatrix[i][j] = value;

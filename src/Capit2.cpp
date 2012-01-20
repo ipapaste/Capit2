@@ -195,9 +195,21 @@ int main(int argc, char* argv[])
 				}
 
 				manager->calc();
-				exit(0);
+
+				map<string,Flow*>::iterator it;
+
+				for(it = manager->flows.begin(); it != manager->flows.end(); it++)
+				{
+					Flow* flow = it->second;
+
+					ActiveFlow* activeFlow = new ActiveFlow(*flow);
+
+					ThreadShell::schedule(*activeFlow,500);
+				}
+
 			}
 		}
+
 
 		/**
 		 * Wait for all threads to end before shutting down.

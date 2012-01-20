@@ -15,7 +15,7 @@
 
 class FlowManager: public AbstractNode
 {
-private:
+public:
 	map<string,Flow*> flows;
 public:
 	void accept(Packet& obj)

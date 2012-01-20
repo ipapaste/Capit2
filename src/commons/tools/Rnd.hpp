@@ -34,7 +34,7 @@ class Rnd
 	boost::random::mt19937 rng;
 public:
 
-	Rnd()
+	Rnd():rng(time(0))
 	{
 
 	}
