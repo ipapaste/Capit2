@@ -1,4 +1,4 @@
-CXXFLAGS = -std=c++0x -I lib -I src -I /usr/include/gtkmm-3.0 `pkg-config gtkmm-3.0 --cflags --libs`
+CXXFLAGS = -std=c++0x -I lib -I src 
 
 OBJS =		src/Capit2.o 
 
@@ -6,6 +6,7 @@ LIBS +=		-lpthread
 LIBS +=		-lpcap
 LIBS +=		-lrt
 LIBS +=		-lboost_system
+LIBS +=		-lboost_regex
 
 TARGET =	capit
 

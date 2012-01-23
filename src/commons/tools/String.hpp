@@ -10,7 +10,9 @@
 
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include <boost/xpressive/xpressive.hpp>
 
+using namespace boost::xpressive;
 using namespace std;
 
 
@@ -43,6 +45,21 @@ public:
 		boost::replace_all(source,pattern,data);
 
 		return source;
+	}
+
+	static bool regexMatch(string text, string regex)
+	{
+		 sregex rex = sregex::compile(regex);
+
+		  if( regex_search( text, rex ) )
+			  return true;
+
+		  return false;
+	}
+
+	static bool areEqual(string s1, string s2)
+	{
+		return !(s1.compare(s2));
 	}
 };
 

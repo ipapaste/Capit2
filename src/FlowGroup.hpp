@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <vector>
+#include "commons/Math.hpp"
 
 using namespace std;
 
@@ -42,12 +43,37 @@ public:
 	}
 	void setProbability(int i , int j, float value)
 	{
+		int size = transmitionMatrix.size();
+		if(i >= size || j >= size)
+		{
+			size = Math<int>::max(i+1, j+1);
+			transmitionMatrix.resize(size);
+
+			for(int i = 0; i < size; i++)
+			{
+				transmitionMatrix[i].resize(size);
+			}
+		}
+
 		transmitionMatrix[i][j] = value;
 	}
 
 	float getProbability(int i, int j)
 	{
 		return transmitionMatrix[i][j];
+	}
+
+	void print()
+	{
+		for(int i = 0; i < transmitionMatrix.size(); i++)
+		{
+			for ( int j = 0; j < transmitionMatrix.size(); j++)
+			{
+				cout << transmitionMatrix[i][j] << " ";
+			}
+
+			cout << endl;
+		}
 	}
 };
 

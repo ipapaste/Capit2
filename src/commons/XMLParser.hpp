@@ -51,7 +51,7 @@ public:
 
 	}
 
-	~XMLParser()
+	virtual ~XMLParser()
 	{
 
 	}

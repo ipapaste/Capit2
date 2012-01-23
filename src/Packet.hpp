@@ -49,6 +49,16 @@ public:
 		setPacketId(getNextId());
 	}
 
+	Packet(long ts)
+	{
+		sourceIp_ = NULL;
+		destinationIp_ = NULL;
+		payload_ = NULL;
+		fileName_ = NULL;
+		timestamp = ts;
+		setPacketId(getNextId());
+	}
+
 	~Packet()
 	{
 		delete sourceIp_;

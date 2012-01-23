@@ -19,8 +19,22 @@
 #include "FlowManager.hpp"
 #include "FlowGroup.hpp"
 #include "CapitXMLParser.hpp"
+#include "CapitInputParser.hpp"
 using namespace std;
 using namespace boost;
+
+void loadMarkov(string markov)
+{
+	CapitMarkovParser* p = new CapitMarkovParser(markov);
+	p->read();
+}
+
+void loadSource(string source)
+{
+	CapitInputParser* p = new CapitInputParser(source);
+	p->read();
+}
+
 
 /**
  * This is the main entry point for the application. To start
@@ -87,7 +101,7 @@ int main(int argc, char* argv[])
 		/**
 		 * Argument defining the IP of the targeted host.
 		 */
-		TCLAP::ValueArg<std::string> serverIp(
+		TCLAP::ValueArg<std::string> targetArg(
 				"t",
 				"serverIp",
 				"The ip of the server running the services targeted for replay.",
@@ -96,119 +110,63 @@ int main(int argc, char* argv[])
 		/**
 		 * Argument defining the pcap file to be replayed.
 		 */
-		TCLAP::ValueArg<std::string> logFile("s", "logFile",
-				"The path to the pcap file to replay. If more than one files "
-						"are needed, separate them with +.", true,
-				"data/sample.pcap", "string");
+		TCLAP::ValueArg<std::string> sourceArg("s", "sourceFile",
+				"The path to the xml source file.", true,
+				"data/config/source.xml", "string");
+
+		/**
+		* Argument defining the pcap file to be replayed.
+		*/
+		TCLAP::ValueArg<std::string> markovArg("d", "markovSource",
+				"The path to the xml file containing the Markov Chain state-entities.", true,
+						"data/config/markov.xml", "string");
 
 	    /**
 		 * Argument defining the pcap file to be replayed.
 	     */
-				TCLAP::ValueArg<std::string> filter("f", "filter",
-						"Specify a pcap filter expression for the sources.", false,
-						"NONE", "string");
+		TCLAP::ValueArg<std::string> filterArg("f", "filter",
+				"Specify a pcap filter expression for the sources.", false,
+				"NONE", "string");
 
 		/**
 		* Argument defining application mode.
 		*/
-		TCLAP::ValueArg<std::string> mode("m", "mode",
+		TCLAP::ValueArg<std::string> modeArg("m", "mode",
 				"The execution mode of the application. Modes can be replay and cluster", true,
 				"replay", "string");
 
 
-		cmd.add(serverIp);
-		cmd.add(logFile);
-		cmd.add(mode);
-		cmd.add(filter);
+		cmd.add(targetArg);
+		cmd.add(sourceArg);
+		cmd.add(markovArg);
+		cmd.add(modeArg);
+		cmd.add(filterArg);
 
 		/**
 		 * Parse the argc/argv array.
 		 */
 		cmd.parse(argc, argv);
 
-		std::string targetIp = serverIp.getValue();
-		std::string files = logFile.getValue();
-		std::string filterValue = filter.getValue();
-		std::string appMode = mode.getValue();
+		std::string target = targetArg.getValue();
+		std::string source = sourceArg.getValue();
+		std::string markov = markovArg.getValue();
+		std::string filter= filterArg.getValue();
+		std::string mode = modeArg.getValue();
 
-		if(appMode.compare("replay") && appMode.compare("cluster") && appMode.compare("generation"))
+		if(!String::areEqual(mode,"replay") && !String::areEqual(mode,"extract"))
 		{
-			cout<< "Mode can only take one of the following values: replay, cluster, generation" << endl;
+			cout<< "Mode can only take one of the following values: replay, extract." << endl;
 			exit(0);
 		}
 
 		/**
 		 * Lazy load and initialize the client manager singleton.
 		 */
-		ClientManagerInstance::getInstance()->setTargetIp(targetIp);
+		ClientManagerInstance::getInstance()->setTargetIp(target);
 
-		char_separator<char> sep("+");
 
-		tokenizer<char_separator<char> > tokens(files, sep);
-
-		if(!appMode.compare("replay"))
-		{
-			BOOST_FOREACH(string t, tokens)
-			{
-				PacketSource* source = new PacketSource();
-				source->openSource(t.c_str());
-
-				if(filterValue.compare("NONE") != 0)
-				{
-
-					source->setFilter(filterValue);
-				}
-				else
-				{
-					cout << "No filter specified." << endl;
-				}
-
-				ClientManagerInstance::getInstance()->registerSource();
-				ThreadShell::schedule(source);
-			}
-		}
-		else if(!appMode.compare("cluster"))
-		{
-			CapitXMLParser* p = new CapitXMLParser("data/config/markov.xml");
-			p->read();
-
-			BOOST_FOREACH(string t, tokens)
-			{
-				PacketSource* source = new PacketSource();
-				source->openSource(t.c_str());
-
-				if(filterValue.compare("NONE") != 0)
-				{
-					source->setFilter(filterValue);
-				}
-				else
-				{
-					cout << "No filter specified." << endl;
-				}
-
-				ClientManagerInstance::getInstance()->registerSource();
-				FlowManager* manager = new FlowManager();
-				Packet* packet = NULL;
-				while((packet = source->getNextPacket()) != NULL)
-				{
-					manager->accept(*packet);
-				}
-
-				manager->calc();
-
-				map<string,Flow*>::iterator it;
-
-				for(it = manager->flows.begin(); it != manager->flows.end(); it++)
-				{
-					Flow* flow = it->second;
-
-					ActiveFlow* activeFlow = new ActiveFlow(*flow);
-
-					ThreadShell::schedule(*activeFlow,500);
-				}
-
-			}
-		}
+		loadMarkov(markov);
+		loadSource(source);
 
 
 		/**
@@ -225,3 +183,111 @@ int main(int argc, char* argv[])
 
 	return EXIT_SUCCESS;
 }
+
+
+
+/**
+int aa()
+{
+	char_separator<char> sep("+");
+
+			tokenizer<char_separator<char> > tokens(files, sep);
+
+			if(String::areEqual(mode, "replay"))
+			{
+				BOOST_FOREACH(string t, tokens)
+				{
+					PacketSource* source = new PacketSource();
+					source->openSource(t.c_str());
+
+					if(filterValue.compare("NONE") != 0)
+					{
+
+						source->setFilter(filterValue);
+					}
+					else
+					{
+						cout << "No filter specified." << endl;
+					}
+
+					ClientManagerInstance::getInstance()->registerSource();
+					ThreadShell::schedule(source);
+				}
+			}
+			else if(!appMode.compare("extract"))
+			{
+				CapitXMLParser* p = new CapitXMLParser("data/config/markov.xml");
+				p->read();
+
+				BOOST_FOREACH(string t, tokens)
+				{
+					PacketSource* source = new PacketSource();
+					source->openSource(t.c_str());
+
+					if(filterValue.compare("NONE") != 0)
+					{
+						source->setFilter(filterValue);
+					}
+					else
+					{
+						cout << "No filter specified." << endl;
+					}
+
+					ClientManagerInstance::getInstance()->registerSource();
+					FlowManager* manager = new FlowManager();
+					Packet* packet = NULL;
+					while((packet = source->getNextPacket()) != NULL)
+					{
+						manager->accept(*packet);
+					}
+
+					manager->calc();
+					exit(0);
+
+				}
+			}
+			else if(!appMode.compare("generate"))
+			{
+				CapitXMLParser* p = new CapitXMLParser("data/config/markov.xml");
+				p->read();
+
+				BOOST_FOREACH(string t, tokens)
+				{
+					PacketSource* source = new PacketSource();
+					source->openSource(t.c_str());
+
+					if(filterValue.compare("NONE") != 0)
+					{
+						source->setFilter(filterValue);
+					}
+					else
+					{
+						cout << "No filter specified." << endl;
+					}
+
+					ClientManagerInstance::getInstance()->registerSource();
+					FlowManager* manager = new FlowManager();
+					FlowsInstance::getInstance()->
+					//Packet* packet = NULL;
+					//while((packet = source->getNextPacket()) != NULL)
+					//{
+					//	manager->accept(*packet);
+					//}
+
+					//manager->calc();
+
+					map<string,Flow*>::iterator it;
+
+					for(it = manager->flows.begin(); it != manager->flows.end(); it++)
+					{
+						Flow* flow = it->second;
+
+						ActiveFlow* activeFlow = new ActiveFlow(*flow);
+
+						ThreadShell::schedule(*activeFlow,500);
+					}
+
+				}
+			}
+}
+*/

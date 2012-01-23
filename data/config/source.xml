@@ -1,0 +1,4 @@
+<capit>
+	<source type="synthetic" matrix="1 1;1 2;" port="21" clients="1" delay="500" />
+	<source type="persistent" filename="data/ftp.pcap"/>
+</capit>

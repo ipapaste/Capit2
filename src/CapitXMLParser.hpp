@@ -1,5 +1,5 @@
-#ifndef CAPIT_XML_PARSER_
-#define CAPIT_XML_PARSER_
+#ifndef CAPIT_XMLMARKOV_PARSER_
+#define CAPIT_XMLMARKOV_PARSER_
 /*
  * XmlTest.cpp
  *
@@ -14,10 +14,10 @@
 #include "Flow.hpp"
 using namespace std;
 
-class CapitXMLParser: public XMLParser
+class CapitMarkovParser: public XMLParser
 {
 public:
-	CapitXMLParser(string filename): XMLParser(filename)
+	CapitMarkovParser(string filename): XMLParser(filename)
 	{
 
 	}
@@ -46,7 +46,7 @@ public:
 
 				BOOST_FOREACH( ptree::value_type const& packet, component.second )
 				{
-					string packetName = packet.second.get("<xmlattr>.name","");
+					string packetName = packet.second.get("<xmlattr>.regex","");
 					string packetValue = packet.second.get("<xmlattr>.value","");
 					if(packetName.size()<1)
 						continue;

@@ -52,6 +52,17 @@ public:
 		for(it = flows.begin(); it != flows.end(); it++)
 			it->second->calc();
 	}
+
+	void addFlow(string srcIp, string dstIp, int srcPort, int dstPort)
+	{
+		Packet* p = new Packet(1000);
+		p->setDestinationIp(new string(dstIp));
+		p->setSourceIp(new string(srcIp));
+		p->setSourcePort(srcPort);
+		p->setDestinationPort(dstPort);
+
+		accept(*p);
+	}
 };
 
 

@@ -16,6 +16,7 @@
 #include <boost/foreach.hpp>
 #include "applications/model/Command.hpp"
 #include "FlowGroup.hpp"
+#include "commons/tools/String.hpp"
 using namespace std;
 
 /**
@@ -95,8 +96,6 @@ public:
 
 			index = count+1;
 		}
-
-		cout << "Count is: " << index << endl;
 	}
 private:
 	/*
@@ -136,7 +135,10 @@ public:
 	{
 		BOOST_FOREACH(Command* command, commands)
 		{
-			if(packet.getPayload()->find(command->getName()) != string::npos)
+			string text = packet.getPayload()->c_str();
+			string regex = command->getName();
+
+			if(String::regexMatch(text,regex))
 			{
 				return getNewState();
 			}
@@ -151,8 +153,12 @@ public:
 
 		BOOST_FOREACH(Command* command, commands)
 		{
-			if(packet.getPayload()->find(command->getCommand()) != string::npos)
+			string text = packet.getPayload()->c_str();
+			string regex = command->getName();
+			if(String::regexMatch(text,regex))
+			{
 				type = true;
+			}
 		}
 
 		packets.push_front(&packet);
@@ -166,8 +172,6 @@ public:
 
 	void calc()
 	{
-		cout << "Calculating a flow state." << endl;
-
 		if(packets.size()<=1)
 		{
 			meanDelay = 0;
@@ -191,8 +195,6 @@ public:
 			}
 			old = it;
 		}
-		cout <<"Delay Mean: "<< meanDelay << endl;
-		cout << "Packet size:" << count << endl;
 	}
 
 	int getId()
