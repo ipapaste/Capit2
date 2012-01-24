@@ -8,9 +8,10 @@
 #ifndef CLIENTMANAGER_HPP_
 #define CLIENTMANAGER_HPP_
 
-#include "commons/Singleton.hpp"
+#include "commons/container/Singleton.hpp"
+#include "commons/container/Entity.hpp"
 #include "commons/Lock.hpp"
-#include "commons/Container.hpp"
+#include "commons//container/Container.hpp"
 #include "commons/Tools.hpp"
 #include "Client.hpp"
 #include "Node.hpp"

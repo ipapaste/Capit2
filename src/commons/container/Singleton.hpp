@@ -1,5 +1,5 @@
 /*
- * Singleton.hpp
+ * container/Singleton.hpp
  *
  *  Created on: Nov 29, 2011
  *      Author: issle

@@ -17,9 +17,10 @@
 #include <boost/tokenizer.hpp>
 #include <string>
 #include "FlowManager.hpp"
-#include "FlowGroup.hpp"
-#include "CapitXMLParser.hpp"
+#include "MarkovMatrix.hpp"
+#include "CapitMarkovParser.hpp"
 #include "CapitInputParser.hpp"
+#include "model/input/SourceManager.hpp"
 using namespace std;
 using namespace boost;
 
@@ -168,7 +169,16 @@ int main(int argc, char* argv[])
 		loadMarkov(markov);
 		loadSource(source);
 
+		SourceManager::getInstance()->print();
 
+		if(String::areEqual(mode,"replay"))
+		{
+			SourceManager::getInstance()->replay();
+		}
+		else
+		{
+			SourceManager::getInstance()->extract();
+		}
 		/**
 		 * Wait for all threads to end before shutting down.
 		 */
@@ -216,7 +226,7 @@ int aa()
 			}
 			else if(!appMode.compare("extract"))
 			{
-				CapitXMLParser* p = new CapitXMLParser("data/config/markov.xml");
+				CapitMarkovParser* p = new CapitMarkovParser("data/config/markov.xml");
 				p->read();
 
 				BOOST_FOREACH(string t, tokens)
@@ -248,7 +258,7 @@ int aa()
 			}
 			else if(!appMode.compare("generate"))
 			{
-				CapitXMLParser* p = new CapitXMLParser("data/config/markov.xml");
+				CapitMarkovParser* p = new CapitMarkovParser("data/config/markov.xml");
 				p->read();
 
 				BOOST_FOREACH(string t, tokens)
@@ -267,7 +277,7 @@ int aa()
 
 					ClientManagerInstance::getInstance()->registerSource();
 					FlowManager* manager = new FlowManager();
-					FlowsInstance::getInstance()->
+					FlowTypeManager::getInstance()->
 					//Packet* packet = NULL;
 					//while((packet = source->getNextPacket()) != NULL)
 					//{

@@ -10,15 +10,17 @@
 
 #include <iostream>
 #include <string>
+#include "AbstractSource.hpp"
 
 using namespace std;
 
-class PersistentSource
+class PersistentSource: public AbstractSource
 {
 	string filename_;
 	string filter_;
 public:
-	PersistentSource(string filename, string filter):filename_(filename),filter_(filter)
+	PersistentSource(string filename, string filter) :
+			filename_(filename), filter_(filter)
 	{
 
 	}
@@ -34,12 +36,12 @@ public:
 		cout << "Filename : " << filename_ << endl;
 	}
 
-	void init()
+	void replay()
 	{
 		PacketSource* source = new PacketSource();
 		source->openSource(filename_.c_str());
 
-		if(filter_.compare("NONE") != 0)
+		if (filter_.compare("NONE") != 0)
 		{
 			source->setFilter(filter_);
 		}
@@ -47,7 +49,31 @@ public:
 		ClientManagerInstance::getInstance()->registerSource();
 		ThreadShell::schedule(source);
 	}
-};
 
+	void extract()
+	{
+		PacketSource* source = new PacketSource();
+		source->openSource(filename_.c_str());
+
+		if (filter_.compare("NONE") != 0)
+		{
+			source->setFilter(filter_);
+		}
+		else
+		{
+			cout << "No filter specified." << endl;
+		}
+
+		ClientManagerInstance::getInstance()->registerSource();
+		FlowManager* manager = new FlowManager();
+		Packet* packet = NULL;
+		while ((packet = source->getNextPacket()) != NULL)
+		{
+			manager->accept(*packet);
+		}
+
+		manager->calc();
+	}
+};
 
 #endif /* PERSISTENTSOURCE_HPP_ */

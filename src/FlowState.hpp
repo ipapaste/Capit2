@@ -15,7 +15,7 @@
 #include "Packet.hpp"
 #include <boost/foreach.hpp>
 #include "applications/model/Command.hpp"
-#include "FlowGroup.hpp"
+#include "MarkovMatrix.hpp"
 #include "commons/tools/String.hpp"
 using namespace std;
 
@@ -67,7 +67,7 @@ public:
 		return transitions[index];
 	}
 
-	void setTransitions(FlowGroup* group)
+	void setTransitions(MarkovMatrix* group)
 	{
 		vector<float> trans = group->getSubGroup(id_);
 

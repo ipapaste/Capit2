@@ -8,15 +8,12 @@
 #ifndef SOURCE_HPP_
 #define SOURCE_HPP_
 
-class Source
+class AbstractSource
 {
 public:
-	virtual void init() = 0;
-
-	virtual ~Source()
-	{
-
-	}
+	virtual void replay() = 0;
+	virtual void extract() = 0;
+	virtual void print() = 0;
 };
 
 

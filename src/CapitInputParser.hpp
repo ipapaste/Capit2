@@ -11,13 +11,13 @@
 #include <iostream>
 #include "commons/XMLParser.hpp"
 #include "FlowState.hpp"
-#include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include "model/input/PersistentSource.hpp"
 #include "model/input/SyntheticSource.hpp"
 #include "Flow.hpp"
+#include "model/input/SourceManager.hpp"
 using namespace std;
 using namespace boost;
 
@@ -47,7 +47,7 @@ public:
 				int port = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.port",""));
 				int delay = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.delay",""));
 
-				FlowGroup group(1);
+				MarkovMatrix group(1);
 
 				char_separator<char> sep(";");
 
@@ -72,8 +72,8 @@ public:
 					j = 0;
 				}
 
-				SyntheticSource source(group,delay, port, clients);
-				source.print();
+				SyntheticSource* source = new SyntheticSource(group,delay, port, clients);
+				SourceManager::getInstance()->addSource(source);
 
 			}
 			else if(String::areEqual(sourceType, "persistent"))
@@ -81,9 +81,8 @@ public:
 				string filename= source.second.get("<xmlattr>.filename","");
 				string filter = source.second.get("<xmlattr>.filter","");
 
-				PersistentSource source(filename,filter);
-				source.print();
-				source.init();
+				PersistentSource* source = new PersistentSource(filename,filter);
+				SourceManager::getInstance()->addSource(source);
 			}
 			else
 			{

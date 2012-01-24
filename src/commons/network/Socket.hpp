@@ -1,5 +1,5 @@
 /*
- * Socket.hpp
+ * network/Socket.hpp
  *
  *  Created on: Nov 29, 2011
  *      Author: issle

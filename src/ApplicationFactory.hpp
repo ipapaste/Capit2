@@ -9,9 +9,9 @@
 #define APPLICATIONFACTORY_HPP_
 
 #include "commons/Lock.hpp"
-#include "commons/Container.hpp"
-#include "commons/Entity.hpp"
-#include "commons/Singleton.hpp"
+#include "commons/container/Container.hpp"
+#include "commons/container/Entity.hpp"
+#include "commons/container/Singleton.hpp"
 #include "commons/Accessor.hpp"
 
 #include "AbstractApplication.hpp"

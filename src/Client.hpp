@@ -11,7 +11,7 @@
 #include "AbstractApplication.hpp"
 #include "Node.hpp"
 #include "commons/Lock.hpp"
-#include "commons/Container.hpp"
+#include "commons/container/Container.hpp"
 #include "ApplicationFactory.hpp"
 
 /**

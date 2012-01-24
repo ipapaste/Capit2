@@ -8,9 +8,9 @@
 #ifndef COMMONS_HPP_
 #define COMMONS_HPP_
 
-#include "commons/Logger.hpp"
+#include "commons/logging/Logger.hpp"
 #include "commons/Lock.hpp"
-#include "commons/Singleton.hpp"
+#include "commons/container/Singleton.hpp"
 #include "commons/Accessor.hpp"
 #include "commons/Container.hpp"
 //#include "commons/Dictionary.hpp"

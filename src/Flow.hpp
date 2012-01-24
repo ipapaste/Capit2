@@ -14,114 +14,17 @@
 #include "Packet.hpp"
 #include "Node.hpp"
 #include "FlowState.hpp"
-#include "FlowGroup.hpp"
-#include "commons/Singleton.hpp"
+#include "MarkovMatrix.hpp"
+#include "commons/container/Singleton.hpp"
 #include "Thread.hpp"
-#include "commons/tools/Rnd.hpp"
+#include "commons/math/Rnd.hpp"
+
+#include "FlowType.hpp"
+#include "FlowTypeManager.hpp"
 using namespace std;
 
 
-/*
- * Each flow contains a specific set of States that
- * it can transit to thus a FlowType is defined based
- * on the protocol that a Flow is based on.
- */
-class FlowType
-{
-	string name_;
-	int port_;
 
-	/*
-	 * A list of all the possible states that the flow
-	 * can access. Should be used for new FlowState
-	 * generation.
-	 */
-	list<FlowState*> states;
-public:
-	FlowType(string name, int port):name_(name)
-	{
-		port_ = port;
-	}
-
-	int size()
-	{
-		return states.size();
-	}
-
-	/*
-	 * Returns the state in which the input packet belongs.
-	 * Returns NULL if no state exists.
-	 */
-	FlowState* getFlowStateForPacket(Packet& packet)
-	{
-		FlowState* state = NULL;
-		BOOST_FOREACH(FlowState* st, states)
-		{
-			state = st->getState(packet);
-			if(state != NULL)
-				return state;
-		}
-
-		return state;
-	}
-
-	void addState(FlowState* state)
-	{
-		states.push_front(state);
-	}
-
-	int getPort()
-	{
-		return port_;
-	}
-
-	string getName()
-	{
-		return name_;
-	}
-
-	void print()
-	{
-		BOOST_FOREACH(FlowState* state, states)
-		{
-			state->print();
-		}
-	}
-
-};
-
-/**
- * Class that defines the list of possible FlowTypes
- * that exist in Capit2. Gets populated from persistent
- * data.
- */
-class Flows
-{
-private:
-	map<int,FlowType*> flowTypes;
-public:
-
-	void addType(int id, FlowType* type)
-	{
-		flowTypes[id] = type;
-	}
-
-	FlowType* getType(int id)
-	{
-		FlowType* type = NULL;
-
-		type = flowTypes[id];
-
-		return type;
-	}
-
-	int size()
-	{
-		return flowTypes.size();
-	}
-};
-
-typedef Singleton<Flows> FlowsInstance;
 
 /**
  * A Flow is an Object that consists of all the packets
@@ -137,7 +40,7 @@ private:
 
 	map<int,Packet*> packets;
 protected:
-	FlowGroup* group;
+	MarkovMatrix* group;
 
 	vector<int> types;
 	list<FlowState*> flowStates;
@@ -151,12 +54,49 @@ public:
 		sourcePort_ = sourcePort;
 		destinationPort_ = destinationPort;
 
-		FlowType* type = FlowsInstance::getInstance()->getType(destinationPort);
-		group = new FlowGroup(type->size());
+		FlowType* type = FlowTypeManager::getInstance()->getType(destinationPort);
+
+		if(type == NULL)
+		{
+			cout << "There is no such type." << endl;
+		}
+		group = new MarkovMatrix(type->size());
 		types.resize(type->size());
+
 	}
 
-	static string getFlowId(const string& srcIp, const string& dstIp, int srcPort, int dstPort)
+	Flow(string sourceIp, string destinationIp, int sourcePort, int destinationPort, MarkovMatrix* _group)
+	{
+		sourcePort_ = sourcePort;
+		destinationPort_ = destinationPort;
+
+		flowId = Flow::getFlowId(sourceIp, destinationIp, sourcePort, destinationPort);
+
+		FlowType* type = FlowTypeManager::getInstance()->getType(destinationPort);
+
+		if(type == NULL)
+		{
+				cout << "There is no such type." << endl;
+		}
+
+		if(type->size()!= _group->size())
+		{
+			cout <<"The defined size for the flow of type: " << destinationPort << " is " << type->size() << endl;
+			cout <<"User specified: " << _group->size() << endl;
+		}
+
+		group = _group;
+		types.resize(type->size());
+
+		list<FlowState*> states = type->getFlowStates();
+
+		BOOST_FOREACH(FlowState* st, states)
+		{
+			flowStates.push_back(st);
+		}
+	}
+
+	static string getFlowId(string srcIp, string dstIp, int srcPort, int dstPort)
 	{
 		string s;
 
@@ -223,7 +163,7 @@ public:
 	{
 		FlowState* state = NULL;
 
-		FlowType* type =  FlowsInstance::getInstance()->getType(packet.getDestinationPort());
+		FlowType* type =  FlowTypeManager::getInstance()->getType(packet.getDestinationPort());
 
 		if(type == NULL)
 			return state;
@@ -242,7 +182,7 @@ public:
 		}
 
 		cout << "Transition matrix: " << endl;
-		int size = FlowsInstance::getInstance()->size();
+		int size = FlowTypeManager::getInstance()->size();
 		for(int i = 0; i<types.size(); i++ )
 		{
 			for(int j = 0; j < types.size(); j++)
@@ -266,57 +206,6 @@ public:
 	}
 };
 
-class ActiveFlow: public Flow, public ThreadShell
-{
-public:
-	ActiveFlow(Flow& flow):Flow(flow)
-	{
-		BOOST_FOREACH(FlowState* state, flowStates)
-		{
-			state->setTransitions(group);
-			if(state->getId() == 0)
-			{
-				activeState = state;
-			}
-		}
-	}
 
-	void run()
-	{
-		if(activeState == NULL)
-		{
-			cout << "NULL activeState found." << endl;
-			return;
-		}
-
-		//TODO: Send the packet.
-
-		int dice = Rand::getInstance()->getInt(1000);
-
-
-		int stateId = activeState->getTransitionId(dice);
-
-		cout << "Dice: " << dice << " from id: " << activeState->getId()<<" to id: " << stateId << endl;
-
-		if(stateId == -1)
-		{
-			cout << "No more states to move to." << endl;
-			return;
-		}
-
-
-		BOOST_FOREACH(FlowState* state, flowStates)
-		{
-			if(state->getId() == stateId)
-			{
-				activeState = state;
-				break;
-			}
-		}
-
-
-		ThreadShell::schedule(*this,1000);
-	}
-};
 
 #endif /* FLOW_HPP_ */

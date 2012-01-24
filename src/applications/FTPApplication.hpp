@@ -10,74 +10,12 @@
 
 #include "../AbstractApplication.hpp"
 #include "model/Command.hpp"
-#include "model/Credential.hpp"
-#include "model/SessionState.hpp"
-#include "commons/tools/Rnd.hpp"
+#include "commons/math/Rnd.hpp"
 #include "commons/XMLParser.hpp"
 
-class FTPApplication: public AbstractApplication, public SessionState
+class FTPApplication: public AbstractApplication
 {
-private:
 
-	static vector<Credential*> credentials;
-	static queue<Command*> commands;
-
-	Credential* credential;
-
-public:
-
-	FTPApplication()
-	{
-		credential = new Credential("issle1", "kaiap4981");
-	}
-
-	void accept(AbstractApplicationType::PacketType& packet)
-	{
-		switch (SessionState::getSessionState())
-		{
-		case STATE_READY:
-		{
-			AbstractApplication::accept(packet);
-			break;
-		}
-		case STATE_USERNAME_PENDING:
-		{
-			if(!packet.getPayload()->find("USER"))
-			{
-				string* payload = new string("USER");
-				payload->append(" ");
-				payload->append(credential->getUsername());
-				payload->append(" \n");
-				packet.setPayload(payload);
-			}
-
-			AbstractApplication::accept(packet);
-			SessionState::setPasswordPending();
-			break;
-		}
-		case STATE_PASSWORD_PENDING:
-		{
-			if(!packet.getPayload()->find("PASS"))
-			{
-				string* payload = new string("PASS");
-				payload->append(" ");
-				payload->append(credential->getUsername());
-				payload->append(" \n");
-				packet.setPayload(payload);
-			}
-
-			AbstractApplication::accept(packet);
-			SessionState::setReady();
-			break;
-		}
-		}
-
-	}
-
-	void loadData(typename XMLParser::TreeType& tree, typename XMLParser::TreeType::value_type const& node)
-	{
-		cout << "Loads ftp data." << endl;
-	}
 };
 
 #endif /* FTPAPPLICATION_HPP_ */

@@ -15,7 +15,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "../Singleton.hpp"
+#include "../container/Singleton.hpp"
 
 double gen_normal(void)
 {

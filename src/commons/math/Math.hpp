@@ -1,5 +1,5 @@
 /*
- * Math.hpp
+ * math/Math.hpp
  *
  *  Created on: Jan 23, 2012
  *      Author: issle

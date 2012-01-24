@@ -8,11 +8,11 @@
 #ifndef ABSTRACTAPPLICATION_HPP_
 #define ABSTRACTAPPLICATION_HPP_
 
-#include "commons/Logger.hpp"
-#include "commons/Entity.hpp"
+#include "commons/logging/Logger.hpp"
+#include "commons/container/Entity.hpp"
 #include "commons/Lock.hpp"
-#include "commons/Queue.hpp"
-#include "commons/Socket.hpp"
+#include "commons/container/Queue.hpp"
+#include "commons/network/Socket.hpp"
 
 #include "Node.hpp"
 #include "Thread.hpp"

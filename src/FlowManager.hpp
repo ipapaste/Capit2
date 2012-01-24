@@ -25,7 +25,7 @@ public:
 		if(obj.getPayload()->size()<1)
 			return;
 
-		if(FlowsInstance::getInstance()->getType(obj.getDestinationPort()) ==NULL)
+		if(FlowTypeManager::getInstance()->getType(obj.getDestinationPort()) ==NULL)
 			return;
 
 		string id = Flow::getFlowId(*obj.getSourceIp(), *obj.getDestinationIp(), obj.getSourcePort(), obj.getDestinationPort());

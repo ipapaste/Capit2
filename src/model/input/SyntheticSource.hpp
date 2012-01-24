@@ -10,18 +10,22 @@
 
 #include <iostream>
 #include <vector>
+#include "AbstractSource.hpp"
+#include "ActiveFlow.hpp"
+#include "commons/math/Rnd.hpp"
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 
-class SyntheticSource
+class SyntheticSource:public AbstractSource
 {
-	FlowGroup flowGroup_;
+	MarkovMatrix MarkovMatrix_;
 	int port_;
 	int delay_;
 	int count_;
 
 public:
-	SyntheticSource(FlowGroup flowGroup, int delay, int port, int count):flowGroup_(flowGroup)
+	SyntheticSource(MarkovMatrix MarkovMatrix, int delay, int port, int count):MarkovMatrix_(MarkovMatrix)
 	{
 		port_ = port;
 		delay_ = delay;
@@ -47,7 +51,43 @@ public:
 	{
 		cout << "SyntheticSource info:" << endl;
 		cout << "Port: " << port_ << " Delay: " << delay_ << " Clients: " << count_ << endl;
-		flowGroup_.print();
+		MarkovMatrix_.print();
+	}
+
+	void replay()
+	{
+		for(int i = 0; i < count_; i++)
+		{
+			int sourcePort = Rand::getInstance()->getInt(1024 , 12000);
+
+			string sourceIp("");
+			for(int i =0; i< 4; i++)
+			{
+				int chunk = Rand::getInstance()->getInt(10,255);
+				sourceIp.append(boost::lexical_cast<string>(chunk));
+				if( i != 3)
+				sourceIp.append(".");
+			}
+
+			cout << sourceIp << endl;
+			string targetIp = ClientManagerInstance::getInstance()->getTargetIp();
+
+			int targetPort = port_;
+
+
+			MarkovMatrix* group = new MarkovMatrix(MarkovMatrix_);
+
+			if(!group->validate())
+				return;
+			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group);
+
+			ThreadShell::schedule(*aflow,5000);
+		}
+	}
+
+	void extract()
+	{
+
 	}
 };
 
