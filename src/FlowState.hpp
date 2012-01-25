@@ -17,6 +17,7 @@
 #include "applications/model/Command.hpp"
 #include "MarkovMatrix.hpp"
 #include "commons/tools/String.hpp"
+#include <queue>
 using namespace std;
 
 /**
@@ -97,12 +98,17 @@ public:
 			index = count+1;
 		}
 	}
+
+	deque<Command*> getCommands()
+	{
+	return commands;
+	}
 private:
 	/*
 	 * A template packet command list that define
 	 * the FlowState type.
 	 */
-	list<Command*> commands;
+	deque<Command*> commands;
 
 	string name_;
 

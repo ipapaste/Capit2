@@ -21,6 +21,7 @@
 #include "CapitMarkovParser.hpp"
 #include "CapitInputParser.hpp"
 #include "model/input/SourceManager.hpp"
+
 using namespace std;
 using namespace boost;
 
@@ -169,8 +170,6 @@ int main(int argc, char* argv[])
 		loadMarkov(markov);
 		loadSource(source);
 
-		SourceManager::getInstance()->print();
-
 		if(String::areEqual(mode,"replay"))
 		{
 			SourceManager::getInstance()->replay();
@@ -178,6 +177,7 @@ int main(int argc, char* argv[])
 		else
 		{
 			SourceManager::getInstance()->extract();
+			exit(0);
 		}
 		/**
 		 * Wait for all threads to end before shutting down.
@@ -193,111 +193,3 @@ int main(int argc, char* argv[])
 
 	return EXIT_SUCCESS;
 }
-
-
-
-/**
-int aa()
-{
-	char_separator<char> sep("+");
-
-			tokenizer<char_separator<char> > tokens(files, sep);
-
-			if(String::areEqual(mode, "replay"))
-			{
-				BOOST_FOREACH(string t, tokens)
-				{
-					PacketSource* source = new PacketSource();
-					source->openSource(t.c_str());
-
-					if(filterValue.compare("NONE") != 0)
-					{
-
-						source->setFilter(filterValue);
-					}
-					else
-					{
-						cout << "No filter specified." << endl;
-					}
-
-					ClientManagerInstance::getInstance()->registerSource();
-					ThreadShell::schedule(source);
-				}
-			}
-			else if(!appMode.compare("extract"))
-			{
-				CapitMarkovParser* p = new CapitMarkovParser("data/config/markov.xml");
-				p->read();
-
-				BOOST_FOREACH(string t, tokens)
-				{
-					PacketSource* source = new PacketSource();
-					source->openSource(t.c_str());
-
-					if(filterValue.compare("NONE") != 0)
-					{
-						source->setFilter(filterValue);
-					}
-					else
-					{
-						cout << "No filter specified." << endl;
-					}
-
-					ClientManagerInstance::getInstance()->registerSource();
-					FlowManager* manager = new FlowManager();
-					Packet* packet = NULL;
-					while((packet = source->getNextPacket()) != NULL)
-					{
-						manager->accept(*packet);
-					}
-
-					manager->calc();
-					exit(0);
-
-				}
-			}
-			else if(!appMode.compare("generate"))
-			{
-				CapitMarkovParser* p = new CapitMarkovParser("data/config/markov.xml");
-				p->read();
-
-				BOOST_FOREACH(string t, tokens)
-				{
-					PacketSource* source = new PacketSource();
-					source->openSource(t.c_str());
-
-					if(filterValue.compare("NONE") != 0)
-					{
-						source->setFilter(filterValue);
-					}
-					else
-					{
-						cout << "No filter specified." << endl;
-					}
-
-					ClientManagerInstance::getInstance()->registerSource();
-					FlowManager* manager = new FlowManager();
-					FlowTypeManager::getInstance()->
-					//Packet* packet = NULL;
-					//while((packet = source->getNextPacket()) != NULL)
-					//{
-					//	manager->accept(*packet);
-					//}
-
-					//manager->calc();
-
-					map<string,Flow*>::iterator it;
-
-					for(it = manager->flows.begin(); it != manager->flows.end(); it++)
-					{
-						Flow* flow = it->second;
-
-						ActiveFlow* activeFlow = new ActiveFlow(*flow);
-
-						ThreadShell::schedule(*activeFlow,500);
-					}
-
-				}
-			}
-}
-*/

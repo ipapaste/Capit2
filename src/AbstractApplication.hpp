@@ -171,8 +171,8 @@ public:
 
 		cout << "Sending:" << *packet->getPayload() << endl;
 
-		if (packet->getPayload() != 0)
-			sendData((u_char*) packet->getPayload()->c_str());
+		//if (packet->getPayload() != 0)
+			//sendData((u_char*) packet->getPayload()->c_str());
 
 		delete packet;
 

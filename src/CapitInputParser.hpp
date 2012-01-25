@@ -46,7 +46,7 @@ public:
 				int clients = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.clients",""));
 				int port = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.port",""));
 				int delay = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.delay",""));
-
+				int std = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.std",""));
 				MarkovMatrix group(1);
 
 				char_separator<char> sep(";");
@@ -72,7 +72,7 @@ public:
 					j = 0;
 				}
 
-				SyntheticSource* source = new SyntheticSource(group,delay, port, clients);
+				SyntheticSource* source = new SyntheticSource(group,delay, std, port, clients);
 				SourceManager::getInstance()->addSource(source);
 
 			}

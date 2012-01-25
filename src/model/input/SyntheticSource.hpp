@@ -23,13 +23,15 @@ class SyntheticSource:public AbstractSource
 	int port_;
 	int delay_;
 	int count_;
+	int std_;
 
 public:
-	SyntheticSource(MarkovMatrix MarkovMatrix, int delay, int port, int count):MarkovMatrix_(MarkovMatrix)
+	SyntheticSource(MarkovMatrix MarkovMatrix, int delay, int std, int port, int count):MarkovMatrix_(MarkovMatrix)
 	{
 		port_ = port;
 		delay_ = delay;
 		count_ = count;
+		std_ = std;
 	}
 
 	int getPort()
@@ -58,12 +60,12 @@ public:
 	{
 		for(int i = 0; i < count_; i++)
 		{
-			int sourcePort = Rand::getInstance()->getInt(1024 , 12000);
+			int sourcePort = Rnd::getInt(1024 , 12000);
 
 			string sourceIp("");
 			for(int i =0; i< 4; i++)
 			{
-				int chunk = Rand::getInstance()->getInt(10,255);
+				int chunk = Rnd::getInt(10,255);
 				sourceIp.append(boost::lexical_cast<string>(chunk));
 				if( i != 3)
 				sourceIp.append(".");
@@ -79,9 +81,9 @@ public:
 
 			if(!group->validate())
 				return;
-			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group);
+			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group, delay_, std_);
 
-			ThreadShell::schedule(*aflow,5000);
+			ThreadShell::schedule(*aflow,1000);
 		}
 	}
 

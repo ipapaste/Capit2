@@ -8,6 +8,9 @@
 #ifndef MATH_HPP_
 #define MATH_HPP_
 
+/*
+ * General purpose math library , implementation independent.
+ */
 template <typename T>  class Math
 {
 public:

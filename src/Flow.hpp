@@ -23,28 +23,51 @@
 #include "FlowTypeManager.hpp"
 using namespace std;
 
-
-
-
 /**
  * A Flow is an Object that consists of all the packets
  * that have the same srcip/dstip/srcport/dstport combination.
  */
 class Flow: public AbstractNode
 {
-private:
+protected:
+	/*
+	 * Unique identifier of each flow.
+	 */
 	string flowId;
 
+	/*
+	 * Identity parts of the flow.
+	 */
 	int sourcePort_;
 	int destinationPort_;
+	string sourceIp_;
+	string destinationIp_;
 
+	/*
+	 * Packets stored in this flow.
+	 */
 	map<int,Packet*> packets;
-protected:
+
+	/*
+	 * MarkovMatrix of this flow. Either
+	 * loaded or generated.
+	 */
 	MarkovMatrix* group;
 
+	/*
+	 * Types of states for fast and
+	 * enumerated access.
+	 */
 	vector<int> types;
+
+	/*
+	 * All the past flow states.
+	 */
 	list<FlowState*> flowStates;
 
+	/*
+	 * The current state of the flow.
+	 */
 	FlowState* activeState;
 public:
 
@@ -69,6 +92,8 @@ public:
 	{
 		sourcePort_ = sourcePort;
 		destinationPort_ = destinationPort;
+		sourceIp_ = sourceIp;
+		destinationIp_ = destinationIp;
 
 		flowId = Flow::getFlowId(sourceIp, destinationIp, sourcePort, destinationPort);
 
@@ -181,7 +206,7 @@ public:
 			st->calc();
 		}
 
-		cout << "Transition matrix: " << endl;
+		cout << "Markov matrix: " << endl;
 		int size = FlowTypeManager::getInstance()->size();
 		for(int i = 0; i<types.size(); i++ )
 		{
@@ -198,11 +223,8 @@ public:
 
 				cout << setw(5) << group->getProbability(i,j) << " ";
 			}
-
 			cout << endl;
 		}
-
-
 	}
 };
 

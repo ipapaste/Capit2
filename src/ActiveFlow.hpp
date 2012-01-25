@@ -21,9 +21,14 @@ using namespace std;
  */
 class ActiveFlow: public Flow, public ThreadShell
 {
+private:
+	int mean_;
+	int std_;
 public:
-	ActiveFlow(string sourceIp, string destinationIp, int sourcePort, int destinationPort, MarkovMatrix* group):Flow(sourceIp, destinationIp, sourcePort, destinationPort,group)
+	ActiveFlow(string sourceIp, string destinationIp, int sourcePort, int destinationPort, MarkovMatrix* group, int mean, int std):Flow(sourceIp, destinationIp, sourcePort, destinationPort,group)
 	{
+		mean_= mean;
+		std_ = std;
 		BOOST_FOREACH(FlowState* state, flowStates)
 		{
 			state->setTransitions(group);
@@ -32,6 +37,7 @@ public:
 				activeState = state;
 			}
 		}
+		ClientManagerInstance::getInstance()->registerSource();
 	}
 
 	void run()
@@ -42,18 +48,46 @@ public:
 			return;
 		}
 
+		//FlowType* type = FlowTypeManager::getInstance()->getType(destinationPort_);
+
+		deque<Command*> commands = activeState->getCommands();
+		Packet* packet = new Packet();
+
+		string* src = new string(sourceIp_);
+		string* dst = new string(destinationIp_);
+		packet->setDestinationIp(dst);
+		packet->setSourceIp(src);
+		packet->setDestinationPort(destinationPort_);
+		packet->setSourcePort(sourcePort_);
+
+		if(commands.size()>=1)
+		{
+			int size = commands.size();
+			string test = commands[Rnd::getInt(size-1)]->getRandom();
+			string* s = new string(test);
+		packet->setPayload(s);
+		}
+		else
+		{
+			string* s = new string("TATATA");
+			packet->setPayload(s);
+		}
+
+		ClientManagerInstance::getInstance()->accept(*packet);
 		//TODO: Send the packet.
 
-		int dice = Rand::getInstance()->getInt(1000);
+		int dice = Rnd::getInt(1000);
 
-		cout << "0" << endl;
 		int stateId = activeState->getTransitionId(dice);
 
-		cout << "Dice: " << dice << " from id: " << activeState->getId()<<" to id: " << stateId << endl;
+		//cout << "Dice: " << dice << " from id: " << activeState->getId()<<" to id: " << stateId << endl;
+
+
 
 		if(stateId == -1)
 		{
 			cout << "No more states to move to." << endl;
+			ClientManagerInstance::getInstance()->removeSource();
 			return;
 		}
 
@@ -67,8 +101,8 @@ public:
 			}
 		}
 
-
-		ThreadShell::schedule(*this,1000);
+		int delay = Rnd::getNormalCutoff(mean_,std_,50);
+		ThreadShell::schedule(*this,delay);
 	}
 };
 

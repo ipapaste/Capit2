@@ -9,48 +9,80 @@
 #define RND_HPP_
 
 #include <iostream>
-#include <boost/random.hpp>
 #include <time.h>
+#include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "../container/Singleton.hpp"
-
-double gen_normal(void)
-{
-  boost::variate_generator<boost::mt19937, boost::normal_distribution<> >
-    generator(boost::mt19937(time(0)),
-           boost::normal_distribution<>());
-
-  double r = generator();
-  return r;
-}
-
 using namespace std;
 
+/**
+ * Library independent interface to random numbers.
+ * Current implementation uses boost. This library
+ * can be extended for non-int usage but is intended
+ * atm for network delays which we count in milli-
+ * seconds thus int/long.
+ */
 class Rnd
 {
-	boost::random::mt19937 rng;
+private:
+	static boost::random::mt19937 rng;
 public:
 
-	Rnd():rng(time(0))
-	{
-
-	}
-	int getInt(int start, int end)
+	/*
+	 * Returns an integer between start and end.
+	 */
+	static int getInt(int start, int end)
 	{
 		boost::random::uniform_int_distribution<> disto(start,end);
 		return disto(rng);
 	}
 
-	int getInt(int end)
+	/*
+	 * Returns an integer between zero and end.
+	 */
+	static int getInt(int end)
 	{
 		return getInt(0,end);
 	}
+
+	/*
+	 * Returns an integer based on Gaussian Dist.
+	 */
+	static int getNormal(float mean , float std)
+	{
+		  boost::normal_distribution<> nd(mean, std);
+
+		  boost::variate_generator<boost::mt19937&, boost::normal_distribution<> > var_nor(rng, nd);
+
+		  return static_cast<int>(var_nor());
+	}
+
+	/*
+	 * Returns a positive int based on Gaussian Dist.
+	 * Negative values are set to zero.
+	 */
+	static int getNormalPositive(float mean, float std)
+	{
+		return getNormalCutoff(mean,std,0);
+	}
+
+	/*
+	 * Returns an int based on Gaussian Dist. Values
+	 * below cutoff, are set to cutoff automatically.
+	 */
+	static int getNormalCutoff(float mean , float std, int cutoff)
+	{
+		int result = getNormal(mean, std);
+
+		if(result < cutoff )
+			result = cutoff;
+
+		return result;
+	}
 };
 
-typedef Singleton<Rnd> Rand;
-
+boost::random::mt19937 Rnd::rng(time(0));
 
 #endif /* RND_HPP_ */
