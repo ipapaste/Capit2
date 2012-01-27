@@ -130,7 +130,11 @@ public:
 		 */
 		ethernetHeader = (struct ether_header*)(packet);
         if (ntohs(ethernetHeader->ether_type) != ETHERTYPE_IP)
-			return NULL;
+        {
+        	Packet* p = new Packet();
+        	p->setIsUnknown();
+			return p;
+        }
         /**
 		 * Read IP layer.
 		 */
@@ -187,6 +191,7 @@ public:
         string *sourceIp_ = new string(sourceIp);
         string *destinationIp_ = new string(destIp);
         string *payload = new std::string(reinterpret_cast<const char*>((u_char*)(dataStr.c_str())));
+
         Packet *packet1 = new Packet(pkthdr->ts);
         packet1->setSourceIp(sourceIp_);
         packet1->setDestinationIp(destinationIp_);

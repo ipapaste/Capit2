@@ -33,19 +33,25 @@ public:
 		while(packetCount < 5)
 		{
 
-			Packet* packet1 = getNextPacket();
-			if(packet1 == NULL)
+			Packet* packet = getNextPacket();
+			if(packet == NULL)
 			{
 				ClientManagerInstance::getInstance()->removeSource();
 				return;
 			}
 
-			ClientManagerInstance::getInstance()->accept(*packet1);
+			if(packet->isUnknown())
+			{
+				delete packet;
+				continue;
+			}
+
+			ClientManagerInstance::getInstance()->accept(*packet);
 			if(packetCount == 0)
-				initialDelay = packet1->getTimestamp();
+				initialDelay = packet->getTimestamp();
 
 			if(packetCount == 5 -1)
-				lastDelay = packet1->getTimestamp();
+				lastDelay = packet->getTimestamp();
 
 			packetCount++;
 

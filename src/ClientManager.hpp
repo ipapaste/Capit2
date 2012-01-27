@@ -109,6 +109,7 @@ public:
 		//Filter out.
 		if (dstIp->compare(targetIp) != 0)
 		{
+
 			delete &packet;
 			return;
 		}

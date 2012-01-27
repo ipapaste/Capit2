@@ -26,6 +26,7 @@ private:
 	string* payload_;
 	string* fileName_;
 
+	bool unknown;
 	int sourcePort;
 	int destinationPort;
 	int packetId;
@@ -47,6 +48,7 @@ public:
 		fileName_ = NULL;
 		timestamp = Tools::getTimeInMillis(&ts);
 		setPacketId(getNextId());
+		unknown = false;
 	}
 
 	Packet()
@@ -57,6 +59,7 @@ public:
 		fileName_ = NULL;
 		timestamp = 0;
 		setPacketId(getNextId());
+		unknown = false;
 	}
 
 	Packet(long ts)
@@ -67,6 +70,7 @@ public:
 		fileName_ = NULL;
 		timestamp = ts;
 		setPacketId(getNextId());
+		unknown = false;
 	}
 
 	~Packet()
@@ -85,6 +89,16 @@ public:
     const string* getDestinationIp() const
     {
         return destinationIp_;
+    }
+
+    bool isUnknown()
+    {
+    	return unknown;
+    }
+
+    void setIsUnknown()
+    {
+    	unknown = true;
     }
 
     int getDestinationPort() const
