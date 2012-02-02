@@ -18,6 +18,7 @@
 #include "model/input/SyntheticSource.hpp"
 #include "Flow.hpp"
 #include "model/input/SourceManager.hpp"
+#include "Definitions.hpp"
 using namespace std;
 using namespace boost;
 
@@ -27,6 +28,36 @@ public:
 	CapitInputParser(string filename): XMLParser(filename)
 	{
 
+	}
+
+	DelayMatrix getMatrix(string matrix)
+	{
+		Matrix<int> group(1);
+
+		char_separator<char> sep(";");
+
+		tokenizer<char_separator<char> > tokens(matrix, sep);
+
+		int i = 0;
+		int j = 0;
+
+		BOOST_FOREACH(string line, tokens)
+		{
+			char_separator<char> sep(" ");
+
+			tokenizer<char_separator<char> > colTokens(line, sep);
+
+			BOOST_FOREACH(string value, colTokens)
+			{
+				float val = boost::lexical_cast<float, std::string>(value);
+				group.setValue(i,j,val);
+				j++;
+			}
+			i++;
+			j = 0;
+		}
+
+		return group;
 	}
 
 	void readImpl(ptree& tree)
@@ -41,13 +72,13 @@ public:
 
 			if(String::areEqual(sourceType, "synthetic"))
 			{
-				string matrix = source.second.get("<xmlattr>.matrix","");
-
+				string matrix = source.second.get("<xmlattr>.probabilityMatrix","");
+				string delay = source.second.get("<xmlattr>.delayMatrix","");
 				int clients = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.clients",""));
 				int port = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.port",""));
-				int delay = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.delay",""));
-				int std = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.std",""));
-				MarkovMatrix group(1);
+
+				MarkovMatrix probabilityMatrix(1);
+				DelayMatrix delayMatrix = getMatrix(delay);
 
 				char_separator<char> sep(";");
 
@@ -65,14 +96,15 @@ public:
 					BOOST_FOREACH(string value, colTokens)
 					{
 						float val = boost::lexical_cast<float, std::string>(value);
-						group.setProbability(i,j,val);
+						probabilityMatrix.setProbability(i,j,val);
 						j++;
 					}
 					i++;
 					j = 0;
 				}
 
-				SyntheticSource* source = new SyntheticSource(group,delay, std, port, clients);
+				SyntheticSource* source = new SyntheticSource(probabilityMatrix,delayMatrix, port, clients);
+				source->print();
 				SourceManager::getInstance()->addSource(source);
 
 			}

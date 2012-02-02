@@ -52,14 +52,18 @@ public:
 	 */
 	FlowState* getFlowStateForPacket(Packet& packet)
 	{
+		cout << "Came there " << endl;
 		FlowState* state = NULL;
 		BOOST_FOREACH(FlowState* st, states)
 		{
 			state = st->getState(packet);
 			if(state != NULL)
+			{
+				cout << "Found a state" << endl;
 				return state;
+			}
 		}
-
+		cout << "came here." << endl;
 		return state;
 	}
 

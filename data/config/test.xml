@@ -1,0 +1,42 @@
+<capit>
+	<application name="ftp" port="21">
+		<states>
+			<state id="0" name="login_u">
+				<packet regex="USER" value="USER &user& \n"/>
+			</state>
+			<state id="1" name="login_p">
+				<packet regex="PASS" value="PASS &var \n"/>
+			</state>
+			<state id="2" name="command">
+				<packet regex="MKDIR" value="MKDIR &var \n"/>
+				<packet regex="RMDIR" value="RMDIR &var \n"/>
+				<packet regex="DELETE" value="DELETE &var \n"/>
+				<packet regex="GET" value="GET &var \n"/>
+				<packet regex="HELP" value="HELP \n"/>
+				<packet regex="LS" value="LS \n"/>
+				<packet regex="LCD" value="LCD \n"/>
+				<packet regex="PWD" value="PWD \n"/>
+				<packet regex="MKD" value="MKD \n"/>
+				<packet regex="SYS" value="SYS \n"/>
+			</state>
+			<state id="3" name="quit">
+				<command regex="QUIT" value="QUIT \n"/>
+			</state>
+			</states>
+		
+			<groups>
+				<group>
+					<name>
+						<value>Issle</value>
+					</name>
+					<pass>
+						<value>kaiap498</value>
+					</pass>
+					<file>
+						<value>test1.jar</value>
+						<value>test2.jar</value>
+					</file>
+				</group>
+			</groups>
+	</application>
+</capit>

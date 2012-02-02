@@ -14,24 +14,22 @@
 #include "ActiveFlow.hpp"
 #include "commons/math/Rnd.hpp"
 #include <boost/lexical_cast.hpp>
+#include "Definitions.hpp"
 
 using namespace std;
 
 class SyntheticSource:public AbstractSource
 {
-	MarkovMatrix MarkovMatrix_;
+	MarkovMatrix markovMatrix_;
+	DelayMatrix delayMatrix_;
 	int port_;
-	int delay_;
 	int count_;
-	int std_;
 
 public:
-	SyntheticSource(MarkovMatrix MarkovMatrix, int delay, int std, int port, int count):MarkovMatrix_(MarkovMatrix)
+	SyntheticSource(MarkovMatrix markovMatrix, DelayMatrix delay, int port, int count):markovMatrix_(markovMatrix),delayMatrix_(delay)
 	{
 		port_ = port;
-		delay_ = delay;
 		count_ = count;
-		std_ = std;
 	}
 
 	int getPort()
@@ -39,9 +37,9 @@ public:
 		return port_;
 	}
 
-	int getDelay()
+	DelayMatrix getDelayMatrix()
 	{
-		return delay_;
+		return delayMatrix_;
 	}
 
 	int getCount()
@@ -52,8 +50,11 @@ public:
 	void print()
 	{
 		cout << "SyntheticSource info:" << endl;
-		cout << "Port: " << port_ << " Delay: " << delay_ << " Clients: " << count_ << endl;
-		MarkovMatrix_.print();
+		cout << "Port: " << port_ << " Clients: " << count_ << endl;
+		cout << "Delay matrix:" << endl;
+		delayMatrix_.print();
+		cout <<"Probability matrix:" << endl;
+		markovMatrix_.print();
 	}
 
 	void replay()
@@ -77,11 +78,11 @@ public:
 			int targetPort = port_;
 
 
-			MarkovMatrix* group = new MarkovMatrix(MarkovMatrix_);
-
+			MarkovMatrix* group = new MarkovMatrix(markovMatrix_);
+			DelayMatrix* delaymat = new DelayMatrix(delayMatrix_);
 			if(!group->validate())
 				return;
-			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group, delay_, std_);
+			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group, delaymat);
 
 			ThreadShell::schedule(*aflow,1000);
 		}

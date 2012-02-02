@@ -11,6 +11,7 @@
 #include <iostream>
 #include "../../commons/tools/String.hpp"
 #include "../../commons/math/Rnd.hpp"
+#include "../../ValueGroup.hpp"
 using namespace std;
 
 class Command
@@ -24,11 +25,20 @@ public:
 
 	}
 
-	string getVariableCommand(string var)
+	string getVariableCommand(ValueGroup g)
 	{
-
 		string dup(command_);
-		String::replace(dup, "&var", var);
+		map<string,deque<string> > myMap = g.getAllValues();
+		map<string,deque<string> >::iterator  iter;
+		for(iter = myMap.begin(); iter != myMap.end(); ++iter)
+		{
+			string key =  iter->first;
+			string regex("&"+key+"&");
+			String::replace(dup,regex,g.getValue(iter->first));
+		}
+
+		String::replace(dup,"&var", getRandom());
+		dup.append("\r\n");
 		return dup;
 	}
 	string getCommand()
@@ -47,7 +57,7 @@ public:
 
 	string getRandom()
 	{
-		return getVariableCommand("sdfkjosdf");
+		return String::getRandom();
 	}
 };
 

@@ -63,7 +63,6 @@ public:
 		{
 			cout << "No filter specified." << endl;
 		}
-
 		ClientManagerInstance::getInstance()->registerSource();
 		FlowManager* manager = new FlowManager();
 		Packet* packet = NULL;
@@ -71,7 +70,6 @@ public:
 		{
 			manager->accept(*packet);
 		}
-
 		manager->calc();
 	}
 };

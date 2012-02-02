@@ -1,25 +1,36 @@
 <capit>
 	<application name="ftp" port="21">
 		<state id="0" name="login_u">
-			<packet regex="USER" value="USER &var \n"/>
+			<packet regex="USER" value="USER &name&"/>
 		</state>
 		<state id="1" name="login_p">
-			<packet regex="PASS" value="PASS &var \n"/>
+			<packet regex="PASS" value="PASS &pass&"/>
 		</state>
 		<state id="2" name="command">
-			<packet regex="MKDIR" value="MKDIR &var \n"/>
-			<packet regex="RMDIR" value="RMDIR &var \n"/>
-			<packet regex="DELETE" value="DELETE &var \n"/>
-			<packet regex="GET" value="GET &var \n"/>
-			<packet regex="HELP" value="HELP \n"/>
-			<packet regex="LS" value="LS \n"/>
-			<packet regex="LCD" value="LCD \n"/>
-			<packet regex="PWD" value="PWD \n"/>
-			<packet regex="MKD" value="MKD \n"/>
-			<packet regex="SYS" value="SYS \n"/>
+			<packet regex="MKD" value="MKD &var"/>
+			<packet regex="RMD" value="RMD &var"/>
+			<packet regex="DELE" value="DELE &var"/>
+			<packet regex="HELP" value="HELP"/>
+			<packet regex="LIST" value="LIST"/>
+			<packet regex="PWD" value="PWD"/>
+			<packet regex="PUT" value="PUT &file&" />
+			<packet regex="SYST" value="SYST"/>
 		</state>
 		<state id="3" name="quit">
-			<command regex="QUIT" value="QUIT \n"/>
+			<command regex="QUIT" value="QUIT"/>
 		</state>
+		<groups>
+				<group>
+					<name>
+						<value>Issle</value>
+					</name>
+					<pass>
+						<value>kaiap498</value>
+					</pass>
+					<file>
+						<value>Makefile</value>
+					</file>
+				</group>
+		</groups>
 	</application>
 </capit>

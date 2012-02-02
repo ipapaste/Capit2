@@ -28,6 +28,7 @@ public:
 		if(FlowTypeManager::getInstance()->getType(obj.getDestinationPort()) ==NULL)
 			return;
 
+		cout << obj.getTimestamp() << endl;
 		string id = Flow::getFlowId(*obj.getSourceIp(), *obj.getDestinationIp(), obj.getSourcePort(), obj.getDestinationPort());
 
 		Flow* f = NULL;
@@ -42,6 +43,7 @@ public:
 			f = flows[id];
 
 		}
+		cout << "1.1.1" << endl;
 		f->accept(obj);
 	}
 

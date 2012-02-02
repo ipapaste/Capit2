@@ -6,6 +6,8 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include "Flow.hpp"
+#include "ValueGroup.hpp"
+#include "ValueGroupManager.hpp"
 using namespace std;
 
 /**
@@ -35,23 +37,45 @@ public:
 			BOOST_FOREACH( ptree::value_type const& component, application.second )
 			{
 
-				string stateName = component.second.get("<xmlattr>.name","");
-				if(stateName.size()<1)
-					continue;
-				int stateId = boost::lexical_cast<int, std::string>(component.second.get("<xmlattr>.id",""));
-				FlowState* state = new FlowState(stateId, stateName);
-				app->addState(state);
-
-
-				BOOST_FOREACH( ptree::value_type const& packet, component.second )
+				if(component.first == "state")
 				{
-					string packetName = packet.second.get("<xmlattr>.regex","");
-					string packetValue = packet.second.get("<xmlattr>.value","");
-					if(packetName.size()<1)
+					string stateName = component.second.get("<xmlattr>.name","");
+					if(stateName.size()<1)
 						continue;
+					int stateId = boost::lexical_cast<int, std::string>(component.second.get("<xmlattr>.id",""));
+					FlowState* state = new FlowState(stateId, stateName);
 
-					Command* command = new Command(packetName,packetValue);
-					state->addCommand(command);
+					app->addState(state);
+
+
+					BOOST_FOREACH( ptree::value_type const& packet, component.second )
+					{
+						string packetName = packet.second.get("<xmlattr>.regex","");
+						string packetValue = packet.second.get("<xmlattr>.value","");
+						if(packetName.size()<1)
+							continue;
+
+						Command* command = new Command(packetName,packetValue);
+						state->addCommand(command);
+
+					}
+				}
+				else if(component.first == "groups")
+				{
+					BOOST_FOREACH( ptree::value_type const&  group, component.second )
+					{
+						ValueGroup vgroup;
+						BOOST_FOREACH( ptree::value_type const& value, group.second )
+						{
+							string key(value.first);
+							BOOST_FOREACH( ptree::value_type const& valuesingle, value.second )
+							{
+								string data(valuesingle.second.data());
+								vgroup.setValue(key, data);
+							}
+						}
+						ValueGroupManager::addGroup(vgroup,appPort);
+					}
 
 				}
 			}

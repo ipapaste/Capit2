@@ -131,7 +131,7 @@ public:
 		ethernetHeader = (struct ether_header*)(packet);
         if (ntohs(ethernetHeader->ether_type) != ETHERTYPE_IP)
         {
-        	Packet* p = new Packet();
+        	Packet* p = new Packet(pkthdr->ts);
         	p->setIsUnknown();
 			return p;
         }

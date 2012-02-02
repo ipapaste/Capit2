@@ -11,6 +11,7 @@
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <boost/xpressive/xpressive.hpp>
+#include "commons/math/Rnd.hpp"
 
 using namespace boost::xpressive;
 using namespace std;
@@ -22,6 +23,8 @@ using namespace std;
  */
 class String
 {
+private:
+	static string alpha;
 public:
 
 	/**
@@ -61,7 +64,26 @@ public:
 	{
 		return !(s1.compare(s2));
 	}
+
+	static string getRandom()
+	{
+		string s;
+		int size = Rnd::getInt(4,10);
+
+		for(int i = 0; i< size; i++)
+		{
+			int index = Rnd::getInt(0,35);
+
+			string toAppend = alpha.substr(index,1);
+
+			s.append(toAppend);
+		}
+
+		return s;
+	}
 };
+
+string String::alpha("abcdefghijklmnopqrstuvwxyz1234567890");
 
 
 #endif /* STRING_HPP_ */

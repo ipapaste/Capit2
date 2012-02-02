@@ -22,13 +22,10 @@ using namespace std;
 class ActiveFlow: public Flow, public ThreadShell
 {
 private:
-	int mean_;
-	int std_;
+	ValueGroup valueGroup_;
 public:
-	ActiveFlow(string sourceIp, string destinationIp, int sourcePort, int destinationPort, MarkovMatrix* group, int mean, int std):Flow(sourceIp, destinationIp, sourcePort, destinationPort,group)
+	ActiveFlow(string sourceIp, string destinationIp, int sourcePort, int destinationPort, MarkovMatrix* group, DelayMatrix* delayMatrix):Flow(sourceIp, destinationIp, sourcePort, destinationPort,group, delayMatrix)
 	{
-		mean_= mean;
-		std_ = std;
 		BOOST_FOREACH(FlowState* state, flowStates)
 		{
 			state->setTransitions(group);
@@ -37,6 +34,7 @@ public:
 				activeState = state;
 			}
 		}
+		valueGroup_ = ValueGroupManager::getRandomGroup(destinationPort);
 		ClientManagerInstance::getInstance()->registerSource();
 	}
 
@@ -63,7 +61,7 @@ public:
 		if(commands.size()>=1)
 		{
 			int size = commands.size();
-			string test = commands[Rnd::getInt(size-1)]->getRandom();
+			string test = commands[Rnd::getInt(size-1)]->getVariableCommand(valueGroup_);
 			string* s = new string(test);
 		packet->setPayload(s);
 		}
@@ -91,17 +89,17 @@ public:
 			return;
 		}
 
-
+		int delay = 100;
 		BOOST_FOREACH(FlowState* state, flowStates)
 		{
 			if(state->getId() == stateId)
 			{
+				delay = Rnd::getNormalCutoff(delayMatrix_->getValue(activeState->getId(), state->getId()),100,50);
 				activeState = state;
 				break;
 			}
 		}
 
-		int delay = Rnd::getNormalCutoff(mean_,std_,50);
 		ThreadShell::schedule(*this,delay);
 	}
 };

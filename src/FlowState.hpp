@@ -155,6 +155,7 @@ public:
 
 	void accept(Packet& packet)
 	{
+		cout << "aaaaa" << endl;
 		bool type = false;
 
 		BOOST_FOREACH(Command* command, commands)
@@ -167,6 +168,7 @@ public:
 			}
 		}
 
+		cout << "aaaaaa" << endl;
 		packets.push_front(&packet);
 		count++;
 	}

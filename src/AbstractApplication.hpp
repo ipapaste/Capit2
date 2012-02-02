@@ -128,8 +128,9 @@ public:
 		}
 		else if (status == INACTIVE)
 		{
+			cout <<"Connecting to host " << *packet.getDestinationIp() << " at port " << packet.getDestinationPort()<< " ..." << endl;
 			connect(*packet.getDestinationIp(), packet.getDestinationPort());
-
+			cout <<"Successfully connected to host " << *packet.getDestinationIp() << endl;
 			status = ACTIVE;
 
 			lock.unlock();
