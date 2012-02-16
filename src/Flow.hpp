@@ -177,7 +177,6 @@ public:
 			stateCount++;
 			types[activeState->getId()] = stateCount;
 		}
-		cout << "a" << endl;
 		//If there is no active state, set this state
 		//as the active one and store it in the states
 		//of this Flow.
@@ -190,7 +189,6 @@ public:
 		//change the state.
 		else if(activeState->getId() != state->getId())
 		{
-			cout << "aaa" << endl;
 			int temp = group->getProbability(activeState->getId(), state->getId());
 			temp++;
 			group->setProbability(activeState->getId(), state->getId(),temp);
@@ -211,7 +209,6 @@ public:
 		//keep the same test.
 		else if(activeState->getId() == state->getId())
 		{
-			cout << "aaaa" << endl;
 			int temp = group->getProbability(activeState->getId(), state->getId());
 			temp++;
 			group->setProbability(activeState->getId(), state->getId(),temp);
@@ -269,7 +266,7 @@ public:
 
 				group->setProbability(i,j,oldProb/divider);
 
-				cout << setw(5) << group->getProbability(i,j) << " ";
+				cout << setw(14) << group->getProbability(i,j) << " ";
 			}
 			cout << endl;
 		}
@@ -288,7 +285,7 @@ public:
 
 						delayMatrix_->setValue(i,j,oldProb/divider);
 
-						cout << setw(5) << delayMatrix_->getValue(i,j) << " ";
+						cout << setw(14) << delayMatrix_->getValue(i,j) << " ";
 					}
 					cout << endl;
 				}

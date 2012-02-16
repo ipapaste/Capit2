@@ -12,7 +12,11 @@
 
 class HTTPApplication: public AbstractApplication
 {
+public:
+	HTTPApplication():AbstractApplication(80)
+	{
 
+	}
 };
 
 #endif /* HTTPAPPLICATION_HPP_ */

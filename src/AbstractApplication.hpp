@@ -13,9 +13,12 @@
 #include "commons/Lock.hpp"
 #include "commons/container/Queue.hpp"
 #include "commons/network/Socket.hpp"
+#include "commons/Printable.hpp"
 
 #include "Node.hpp"
 #include "Thread.hpp"
+#include "applications/AbstractPreprocessor.hpp"
+#include <deque>
 
 /**
  * Should have a lock since two threads will
@@ -69,43 +72,41 @@ typedef Queue<AbstractNode::PacketType*, MutexLock> STLQueue;
 typedef Entity5<ThreadShell, AbstractNode, ApplicationLogger, STLQueue,
 		BoostSocket> AbstractApplicationType;
 
-class AbstractApplication: public AbstractApplicationType
+class AbstractApplication: public AbstractApplicationType,public Printable
 {
 private:
 
+	int port_;
 	/*
 	 *  The application status.
 	 */
 	int status;
-
-	/**
-	 * No packets received yet.
-	 */
-	static const int INACTIVE = 0;
-
-	/**
-	 * Currently sending packets.
-	 */
-	static const int ACTIVE = 1;
-
-	/**
-	 * Waiting on a packet arrived condition.
-	 */
-	static const int SLEEPING = 2;
 
 	/*
 	 * Used for guarded access to the status.
 	 */
 	MutexLock lock;
 
+	deque<AbstractPreprocessor*> preprocs;
+
+	string previousResponce;
+
+	long lastTimestamp_;
+
 public:
+
+	void addPreprocessor(AbstractPreprocessor* pr)
+	{
+		preprocs.push_back(pr);
+	}
 
 	/**
 	 * Each application should be initialized as inactive.
 	 */
-	AbstractApplication()
+	AbstractApplication(int port)
 	{
-		status = INACTIVE;
+		port_ = port;
+		lastTimestamp_= -1;
 	}
 
 	/**
@@ -119,28 +120,27 @@ public:
 
 		lock.lock();
 
-		if (status == SLEEPING)
-		{
-			status = ACTIVE;
-			lock.unlock();
+		long packetTimestamp = packet.getTimestamp();
 
-			ThreadShell::condSignal(fakeCond);
-		}
-		else if (status == INACTIVE)
-		{
-			cout <<"Connecting to host " << *packet.getDestinationIp() << " at port " << packet.getDestinationPort()<< " ..." << endl;
-			connect(*packet.getDestinationIp(), packet.getDestinationPort());
-			cout <<"Successfully connected to host " << *packet.getDestinationIp() << endl;
-			status = ACTIVE;
+		string destIp = *packet.getDestinationIp();
+		int destPort = packet.getDestinationPort();
 
-			lock.unlock();
-
-			ThreadShell::schedule(this);
-		}
-		else
+		if(lastTimestamp_ == -1)
 		{
-			lock.unlock();
+			cout <<"Connecting to host " << destIp << " at port " << destPort << " ..." << endl;
+			connect(destIp, destPort);
+			cout <<"Successfully connected to host " << destIp << endl;
+			lastTimestamp_ = packetTimestamp;
 		}
+
+		int delay = packetTimestamp - lastTimestamp_;
+
+		setDelay(delay);
+
+		ThreadShell::schedule(this);
+
+		lock.unlock();
+
 
 	}
 
@@ -152,11 +152,7 @@ public:
 	 */
 	void run()
 	{
-		while (status != INACTIVE)
-		{
-			executeCode();
-		}
-
+		executeCode();
 	}
 
 	void executeCode()
@@ -172,19 +168,29 @@ public:
 
 		cout << "Sending:" << *packet->getPayload() << endl;
 
-		if (packet->getPayload() != 0)
-			sendData((u_char*) packet->getPayload()->c_str());
-
-		delete packet;
-
-		if (isEmpty())
+		for(int i = 0; i < preprocs.size(); i++)
 		{
-			lock.lock();
-			status = SLEEPING;
-			lock.unlock();
-			ThreadShell::condWait(fakeCond, fakeMutex);
+			preprocs[i]->preprocess(*packet, previousResponce);
 		}
 
+		if (packet->getPayload() != 0)
+		{
+			previousResponce = sendData((u_char*) packet->getPayload()->c_str());
+		}
+
+		delete packet;
+	}
+
+	void print()
+	{
+		cout << "7" << endl;
+		cout << "[Application:" << port_ << "] Statistics:" << endl;
+		cout << "8" << endl;
+		for(int i = 0; i < preprocs.size(); i++)
+		{
+			cout << "9" << endl;
+			preprocs[i]->print();
+		}
 	}
 };
 

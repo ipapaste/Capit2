@@ -33,7 +33,7 @@ public:
 			connectImpl(ip,port);
 	}
 
-	virtual void sendData(u_char* data) = 0;
+	virtual string sendData(u_char* data) = 0;
 
 	virtual ~AbstractSocket()
 	{
@@ -56,10 +56,36 @@ private:
 	boost::asio::streambuf* request;
 
 	std::ostream* request_stream;
+
+	void init()
+	{
+		io_service = NULL;
+		resolver = NULL;
+		query = NULL;
+		socket = NULL;
+		request = NULL;
+		request_stream = NULL;
+	}
+
+	inline void deleteMe()
+	{
+		delete io_service;
+		delete resolver;
+		delete query;
+		delete socket;
+		delete request;
+		delete request_stream;
+	}
 public:
+
+	BoostSocket()
+	{
+		init();
+	}
 
 	void connectImpl(const string& ip, int port)
 	{
+		deleteMe();
 
 		io_service = new boost::asio::io_service();
 
@@ -79,14 +105,30 @@ public:
 		return false;
 	}
 
-	void sendData(u_char* data)
+	string sendData(u_char* data)
 	{
 		boost::asio::streambuf request;
+		boost::asio::streambuf responce;
 		std::ostream request_stream(&request);
 		request_stream << data ;
 		// Send the request.
 		boost::asio::write(*socket, request);
 
+		boost::asio::read_until(*socket,responce,"\r\n");
+
+		std::istream responce_stream(&responce);
+
+		string s;
+
+		responce_stream >> s;
+
+		return s;
+
+	}
+
+	~BoostSocket()
+	{
+		deleteMe();
 	}
 
 };

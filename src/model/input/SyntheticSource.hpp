@@ -80,10 +80,14 @@ public:
 
 			MarkovMatrix* group = new MarkovMatrix(markovMatrix_);
 			DelayMatrix* delaymat = new DelayMatrix(delayMatrix_);
-			if(!group->validate())
-				return;
+
+			bool result = group->validate();
+
+			if(result == 0)
+				continue;
 			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group, delaymat);
 
+			cout << "Scheduling a flow" << endl;
 			ThreadShell::schedule(*aflow,1000);
 		}
 	}

@@ -9,15 +9,23 @@
 		<state id="2" name="command">
 			<packet regex="MKD" value="MKD &var"/>
 			<packet regex="RMD" value="RMD &todele&"/>
+		</state>
+		<state id="3" name="move_dir">
+			<packet regex="CWD" value="CWD &var"/>
+		</state>
+		<state id="4" name="move_back_dir">
+			<packet regex="CDUP" value="CDUP"/>
+		</state>
+		<state id="5" name="move_back_dir">
+			<packet regex="DELE" value="DELE &var"/>
+		</state>
+		<state id="6" name="misc">
 			<packet regex="HELP" value="HELP"/>
 			<packet regex="STAT" value="STAT"/>
 			<packet regex="LIST" value="LIST"/>
 			<packet regex="SYST" value="SYST"/>
-			<packet regex="CWD" value="CWD &var"/>
-			<packet regex="CDUP" value="CDUP"/>
-			<packet regex="DELE" value="DELE &var"/>
 		</state>
-		<state id="3" name="quit">
+		<state id="7" name="quit">
 			<command regex="QUIT" value="QUIT"/>
 		</state>
 		<groups>
@@ -26,7 +34,7 @@
 						<value>issle</value>
 					</name>
 					<pass>
-						<value>12341234</value>
+						<value>kaiap498</value>
 					</pass>
 					<file>
 						<value>Makefile</value>

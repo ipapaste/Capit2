@@ -12,31 +12,37 @@
 #include "ClientManager.hpp"
 #include "Thread.hpp"
 #include "commons/Tools.hpp"
+#include "commons/util/Date.hpp"
+#include "commons/math/Math.hpp"
 
-template <class PacketSourceAdapter> class PacketSourceShell: public PacketSourceAdapter
+using namespace commons::util;
+
+typedef Entity2<PcapAdapter,ThreadShell> ActiveSource;
+
+class PacketSource:public ActiveSource
 {
+private:
+	static const long AHEAD_THRESHOLD = 50000;
 public:
+	void run()
+	{
+		long startingTime= Date::currentTimeInMillis();
 
-};
+		long firstPacketTimestamp = -1;
 
-typedef PacketSourceShell<PcapAdapter> PacketSourceType;
+		long lastPacketTimestamp;
 
-typedef Entity2<PacketSourceType,ThreadShell> PacketSource1;
+		long currentTime;
 
-class PacketSource:public PacketSource1
-{
-public:
-	void run(){
-		int packetCount = 0;
-		long initialDelay = 0;
-		long lastDelay = 0;
-		while(packetCount < 5)
+		long ahead = 0;
+
+		while(ahead < AHEAD_THRESHOLD)
 		{
-
 			Packet* packet = getNextPacket();
+
 			if(packet == NULL)
 			{
-				ClientManagerInstance::getInstance()->removeSource();
+				//ClientManagerInstance::getInstance()->removeSource();
 				return;
 			}
 
@@ -47,17 +53,23 @@ public:
 			}
 
 			ClientManagerInstance::getInstance()->accept(*packet);
-			if(packetCount == 0)
-				initialDelay = packet->getTimestamp();
 
-			if(packetCount == 5 -1)
-				lastDelay = packet->getTimestamp();
+			if(firstPacketTimestamp ==-1)
+				firstPacketTimestamp = packet->getTimestamp();
 
-			packetCount++;
+			lastPacketTimestamp = packet->getTimestamp();
 
+			currentTime = Date::currentTimeInMillis();
+
+			long packetCoveredTime = lastPacketTimestamp - firstPacketTimestamp;
+
+			long applicationDelay = currentTime - startingTime;
+
+			ahead = Math<long>::max(0,packetCoveredTime - applicationDelay);
 		}
-		//cout << "Delay is: " << lastDelay - initialDelay<< endl;
-		this->setDelay(lastDelay - initialDelay);
+
+		setDelay(ahead);
+
 		ThreadShell::schedule(this);
 	}
 };

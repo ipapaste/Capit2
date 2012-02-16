@@ -8,6 +8,8 @@
 #ifndef MATH_HPP_
 #define MATH_HPP_
 
+#include <cstdlib>
+using namespace std;
 /*
  * General purpose math library , implementation independent.
  */
@@ -20,6 +22,11 @@ public:
 			return t1;
 		else
 			return t2;
+	}
+
+	static T abs(T t1)
+	{
+		return abs(t1);
 	}
 };
 

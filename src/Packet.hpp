@@ -37,7 +37,7 @@ private:
 	 * Represents the delay in which this packet arrived
 	 * with zero reference the start of the pcap file reading.
 	 */
-	long timestamp;
+	long timestamp_;
 
 public:
 	Packet(const timeval& ts)
@@ -46,7 +46,7 @@ public:
 		destinationIp_ = NULL;
 		payload_ = NULL;
 		fileName_ = NULL;
-		timestamp = Tools::getTimeInMillis(&ts);
+		timestamp_ = Tools::getTimeInMillis(&ts);
 		setPacketId(getNextId());
 		unknown = false;
 	}
@@ -57,7 +57,7 @@ public:
 		destinationIp_ = NULL;
 		payload_ = NULL;
 		fileName_ = NULL;
-		timestamp = 0;
+		timestamp_ = 0;
 		setPacketId(getNextId());
 		unknown = false;
 	}
@@ -68,7 +68,7 @@ public:
 		destinationIp_ = NULL;
 		payload_ = NULL;
 		fileName_ = NULL;
-		timestamp = ts;
+		timestamp_ = ts;
 		setPacketId(getNextId());
 		unknown = false;
 	}
@@ -123,7 +123,7 @@ public:
 
     long getTimestamp() const
     {
-        return timestamp;
+        return timestamp_;
     }
 
     void setDestinationIp(string *destinationIp)
@@ -151,6 +151,11 @@ public:
     void setSourcePort(int sourcePort)
     {
         this->sourcePort = sourcePort;
+    }
+
+    void setTimestamp(long timestamp)
+    {
+    	timestamp_ = timestamp;
     }
 
     int getPacketId() const

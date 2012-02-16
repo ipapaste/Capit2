@@ -55,6 +55,11 @@ private:
 	 */
 	string targetIp;
 
+	/*
+	 * Applications in running mode;
+	 */
+
+	int runningApps_;
 
 	/*
 	 * Counts the sources registered to this
@@ -69,6 +74,7 @@ public:
 	ClientManager()
 	{
 		sourceCount = 0;
+		runningApps_=0;
 		targetIp = string("127.0.0.1");
 	}
 
@@ -77,13 +83,25 @@ public:
 		sourceCount++;
 	}
 
+	void registerApp()
+	{
+		runningApps_++;
+	}
+
+	void unregisterApp()
+	{
+		runningApps_--;
+	}
+
 	void removeSource()
 	{
 		sourceCount--;
 
 		if (sourceCount == 0)
 		{
-			exit(0);
+			print();
+			if(runningApps_ <=0)
+				exit(0);
 		}
 	}
 
@@ -118,7 +136,7 @@ public:
 
 		if (!hasItem(*srcIp))
 		{
-			client = new Client();
+			client = new Client(*srcIp);
 			log("Generating a new client.", 4);
 			addItem(*srcIp, client);
 		}
@@ -139,6 +157,19 @@ public:
 	string getTargetIp()
 	{
 		return targetIp;
+	}
+
+	void print()
+	{
+		cout << "1" << endl;
+		cout << "-------------------- Client Manager statistics -----------------" << endl;
+		map<string,Client*>::iterator it;
+		cout << "2" << endl;
+		for(it = getMap()->begin(); it != getMap()->end(); it++)
+		{
+			cout << "3" << endl;
+			it->second->print();
+		}
 	}
 }
 ;

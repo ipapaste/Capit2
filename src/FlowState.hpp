@@ -70,6 +70,7 @@ public:
 
 	void setTransitions(MarkovMatrix* group)
 	{
+		cout << "For: " << id_ << endl;
 		vector<float> trans = group->getSubGroup(id_);
 
 		transitions.resize(1100);
@@ -88,11 +89,15 @@ public:
 
 			int count = 0;
 
-			count = index + 1000*prob;
+			count = index + 1100*prob;
+
+			if(count == 0)
+				continue;
 
 			for(int j = index; j < count; j++ )
 			{
 				transitions[j] = i;
+				cout << i ;
 			}
 
 			index = count+1;
@@ -155,7 +160,6 @@ public:
 
 	void accept(Packet& packet)
 	{
-		cout << "aaaaa" << endl;
 		bool type = false;
 
 		BOOST_FOREACH(Command* command, commands)
@@ -167,8 +171,6 @@ public:
 				type = true;
 			}
 		}
-
-		cout << "aaaaaa" << endl;
 		packets.push_front(&packet);
 		count++;
 	}

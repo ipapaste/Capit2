@@ -13,6 +13,7 @@
 #include "commons/Lock.hpp"
 #include "commons/container/Container.hpp"
 #include "ApplicationFactory.hpp"
+#include "commons/Printable.hpp"
 
 /**
  * A client is accessed by a ClientManager thus
@@ -43,9 +44,14 @@ typedef Container<int, AbstractApplication*, NoLock> ClientContainer;
  */
 typedef Entity3<ClientContainer, ClientLogger, AbstractNode> AbstractClient;
 
-class Client: public AbstractClient
+class Client: public AbstractClient, public Printable
 {
 public:
+	string ip_;
+
+	Client(string ip):ip_(ip)
+	{
+	}
 	/**
 	 * Before this method forwards packets
 	 * to the appropriate application it will
@@ -92,6 +98,23 @@ public:
 			app = getItem(serverPort);
 		}
 		app->accept(p);
+	}
+
+	void print()
+	{
+		cout << "4" << endl;
+		cout << "[Client:" << ip_ <<"] Statistics:" << endl;
+		cout << "5" << endl;
+		map<int,AbstractApplication*>::iterator it;
+
+		for(it = getMap()->begin(); it!=getMap()->end(); it++)
+		{
+			cout << "6" << endl;
+			cout << "Port" << it->first << endl;
+			if(it->second == NULL)
+				continue;
+			it->second->print();
+		}
 	}
 
 };

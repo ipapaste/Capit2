@@ -16,6 +16,7 @@
 
 #include "AbstractApplication.hpp"
 #include "applications/HTTPApplication.hpp"
+#include "applications/FTPApplication.hpp"
 //#include "applications/FTPApplication.hpp"
 
 /**
@@ -30,7 +31,7 @@ typedef Container<int,ApplicationAccessor*,NoLock> FactoryPolicy;
 
 
 typedef ObjectAccessor<HTTPApplication,ApplicationAccessor> HTTPAccessor;
-typedef ObjectAccessor<HTTPApplication, ApplicationAccessor> FTPAccessor;
+typedef ObjectAccessor<FTPApplication, ApplicationAccessor> FTPAccessor;
 
 
 class ApplicationFactory:public FactoryPolicy

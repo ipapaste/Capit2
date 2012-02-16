@@ -23,7 +23,7 @@ private:
 
 public:
 
-	const map<ContainerIndex,ContainerValue>* getMap() const
+	map<ContainerIndex,ContainerValue>* getMap()
 	{
 		return &content;
 	}

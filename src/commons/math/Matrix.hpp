@@ -69,7 +69,7 @@ public:
 		{
 			for ( int j = 0; j < matrix.size(); j++)
 			{
-				cout << matrix[i][j] << " ";
+				cout << setw(6)<< matrix[i][j] << " ";
 			}
 
 			cout << endl;

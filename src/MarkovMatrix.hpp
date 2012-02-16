@@ -59,15 +59,18 @@ public:
 				sum+= getProbability(i,j);
 			}
 
+			if(sum > 0.99)
+				sum = 1;
 			if(sum != 0 && sum != 1)
 			{
-				cout << "This Markov matrix does not have a row sum of probabilities equal to zero or one.";
+				cout << "Row: " << i <<" Sum: " << sum <<": This Markov matrix does not have a row sum of probabilities equal to zero or one." << endl;
 				return false;
 			}
 
 			sum = 0;
 		}
 
+		cout <<"Markov probability matrix is validated successfully." << endl;
 		return true;
 	}
 };

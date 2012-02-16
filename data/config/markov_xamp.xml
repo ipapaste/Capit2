@@ -1,0 +1,27 @@
+<capit>
+	<application name="http" port="80">
+		<state id="0" name="get">
+			<packet regex="splash" value="GET /xampp/splash.php HTTP/1.1
+Host: 127.0.0.1
+Connection: keep-alive
+Cache-Control: max-age=0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.63 Safari/535.7
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: en-US,en;q=0.8,el;q=0.6
+Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3
+"/>
+		</state>
+		<state id="1" name="css">
+			<packet regex="css" value="GET /xampp/xampp.css HTTP/1.1"/>
+		</state>
+		<state id="2" name="css1">
+			<packet regex="css1" value="GET /xampp/xampp.css HTTP/1.1"/>
+		</state>
+		<groups>
+				<group>
+					
+				</group>
+		</groups>
+	</application>
+</capit>
