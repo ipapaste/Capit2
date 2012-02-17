@@ -10,7 +10,7 @@
 
 #include "AbstractApplication.hpp"
 #include "Node.hpp"
-#include "commons/Lock.hpp"
+#include "commons/concurrent/Mutex.hpp"
 #include "commons/container/Container.hpp"
 #include "ApplicationFactory.hpp"
 #include "commons/Printable.hpp"
@@ -19,12 +19,12 @@
  * A client is accessed by a ClientManager thus
  * a Locking Logger is not needed.
  */
-typedef Logger<1, NoLock> ClientLogger;
+typedef Logger<1, Mutex> ClientLogger;
 
 /**
  * A client contains a map of <ports/applications>.
  */
-typedef Container<int, AbstractApplication*, NoLock> ClientContainer;
+typedef Container<int, AbstractApplication*, Mutex> ClientContainer;
 
 /**
  * A Client is an Entity that receives packets
@@ -73,7 +73,7 @@ public:
 
 		if (!hasItem(serverPort))
 		{
-			ApplicationAccessor* accessor = ApplicationFactoryInstance::getInstance()->getItem(serverPort);
+			ApplicationAccessor* accessor = ApplicationFactoryInstance::getInstance().getItem(serverPort);
 
 			if(accessor == NULL)
 			{

@@ -34,6 +34,7 @@ class FlowState: public AbstractNode
 {
 private:
 
+	static const int TABLE_SIZE = 1100;
 	/*
 	 * Each FlowState has an id that represents
 	 * the type of the FlowState and not the Flow
@@ -60,6 +61,8 @@ private:
 	int count;
 
 	list<Packet*> packets;
+
+	bool unknown;
 public:
 	vector<int> transitions;
 
@@ -70,12 +73,11 @@ public:
 
 	void setTransitions(MarkovMatrix* group)
 	{
-		cout << "For: " << id_ << endl;
 		vector<float> trans = group->getSubGroup(id_);
 
-		transitions.resize(1100);
+		transitions.resize(TABLE_SIZE);
 
-		for(int i =0; i< 1100; i++)
+		for(int i =0; i< TABLE_SIZE; i++)
 		{
 			transitions[i] = -1;
 		}
@@ -89,7 +91,7 @@ public:
 
 			int count = 0;
 
-			count = index + 1100*prob;
+			count = index + TABLE_SIZE*prob;
 
 			if(count == 0)
 				continue;
@@ -104,16 +106,16 @@ public:
 		}
 	}
 
-	deque<Command*> getCommands()
+	deque<Command> getCommands()
 	{
-	return commands;
+		return commands;
 	}
 private:
 	/*
 	 * A template packet command list that define
 	 * the FlowState type.
 	 */
-	deque<Command*> commands;
+	deque<Command> commands;
 
 	string name_;
 
@@ -121,9 +123,10 @@ private:
 	 * Should be used to generate new flow state
 	 * objects.
 	 */
-	FlowState* getNewState()
+	FlowState getNewState()
 	{
-		return new FlowState(*this);
+		FlowState st(*this);
+		return st;
 	}
 public:
 
@@ -135,6 +138,14 @@ public:
 	{
 		id_ = id;
 		count = 0;
+		unknown = false;
+	}
+
+	FlowState()
+	{
+		id_ = -1;
+		count = 0;
+		unknown = false;
 	}
 
 	/*
@@ -142,12 +153,12 @@ public:
 	 * packet belongs in that state. Returns NULL
 	 * if the packet does not belong to this state.
 	 */
-	FlowState* getState(Packet& packet)
+	FlowState getState(Packet& packet)
 	{
-		BOOST_FOREACH(Command* command, commands)
+		for(int i =0; i < commands.size(); i++)
 		{
 			string text = packet.getPayload()->c_str();
-			string regex = command->getName();
+			string regex = commands[i].getName();
 
 			if(String::regexMatch(text,regex))
 			{
@@ -155,17 +166,29 @@ public:
 			}
 		}
 
-		return NULL;
+		FlowState st;
+		st.setIsUnknown();
+		return st;
+	}
+
+	void setIsUnknown()
+	{
+		unknown = true;
+	}
+
+	bool isUnknown()
+	{
+		return unknown;
 	}
 
 	void accept(Packet& packet)
 	{
 		bool type = false;
 
-		BOOST_FOREACH(Command* command, commands)
+		for(int i =0; i < commands.size(); i++)
 		{
 			string text = packet.getPayload()->c_str();
-			string regex = command->getName();
+			string regex = commands[i].getName();
 			if(String::regexMatch(text,regex))
 			{
 				type = true;
@@ -175,7 +198,7 @@ public:
 		count++;
 	}
 
-	void addCommand(Command* command)
+	void addCommand(Command command)
 	{
 		commands.push_front(command);
 	}
@@ -215,9 +238,9 @@ public:
 	void print()
 	{
 		cout << "State: " << name_ << " Id: " << id_ << endl;
-		BOOST_FOREACH(Command* command, commands)
+		for(int i =0; i < commands.size(); i++)
 		{
-			command->print();
+			commands[i].print();
 		}
 	}
 };

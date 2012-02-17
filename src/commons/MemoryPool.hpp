@@ -9,7 +9,7 @@
 #define MEMORYPOOL_HPP_
 
 #include <iostream>
-#include "Lock.hpp"
+#include "commons/concurrent/Mutex.hpp"
 using namespace std;
 
 
@@ -45,7 +45,7 @@ private:
 	 */
 	T* next;
 
-	static MutexLock* lock;
+	static Mutex* lock;
 
 
 public:
@@ -56,7 +56,7 @@ public:
 	static void* operator new(size_t size)
 	{
 		if(lock == 0)
-			lock = new MutexLock();
+			lock = new Mutex();
 
 		lock->lock();
 
@@ -113,6 +113,6 @@ public:
 	}
 };
 
-template< class T > MutexLock* MemoryPool<T>::lock = 0;
+template< class T > Mutex* MemoryPool<T>::lock = 0;
 template< class T > T* MemoryPool<T>::headOfFreeList = 0;
 #endif /* MEMORYPOOL_HPP_ */

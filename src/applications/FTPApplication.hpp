@@ -9,7 +9,6 @@
 #define FTPAPPLICATION_HPP_
 
 #include "../AbstractApplication.hpp"
-#include "model/Command.hpp"
 #include "commons/math/Rnd.hpp"
 #include "commons/XMLParser.hpp"
 #include "FtpPreprocessor.hpp"

@@ -10,15 +10,14 @@
 
 #include <iostream>
 #include "commons/XMLParser.hpp"
-#include "FlowState.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include "model/input/PersistentSource.hpp"
 #include "model/input/SyntheticSource.hpp"
-#include "Flow.hpp"
 #include "model/input/SourceManager.hpp"
-#include "Definitions.hpp"
+#include "model/impl/DelayMatrix.hpp"
+#include "model/impl/MarkovMatrix.hpp"
 using namespace std;
 using namespace boost;
 
@@ -30,9 +29,9 @@ public:
 
 	}
 
-	DelayMatrix getMatrix(string matrix)
+	IMatrix& getMatrix(string matrix)
 	{
-		Matrix<int> group(1);
+		IMatrix& group = *(new DelayMatrix());
 
 		char_separator<char> sep(";");
 
@@ -72,13 +71,14 @@ public:
 
 			if(String::areEqual(sourceType, "synthetic"))
 			{
+
 				string matrix = source.second.get("<xmlattr>.probabilityMatrix","");
 				string delay = source.second.get("<xmlattr>.delayMatrix","");
 				int clients = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.clients",""));
 				int port = boost::lexical_cast<int, std::string>(source.second.get("<xmlattr>.port",""));
 
-				MarkovMatrix probabilityMatrix(1);
-				DelayMatrix delayMatrix = getMatrix(delay);
+				IMatrix& probabilityMatrix = *(new MarkovMatrix());
+				IMatrix& delayMatrix = getMatrix(delay);
 
 				char_separator<char> sep(";");
 
@@ -96,7 +96,7 @@ public:
 					BOOST_FOREACH(string value, colTokens)
 					{
 						float val = boost::lexical_cast<float, std::string>(value);
-						probabilityMatrix.setProbability(i,j,val);
+						probabilityMatrix.setValue(i,j,val);
 						j++;
 					}
 					i++;
@@ -105,7 +105,7 @@ public:
 
 				SyntheticSource* source = new SyntheticSource(probabilityMatrix,delayMatrix, port, clients);
 				source->print();
-				SourceManager::getInstance()->addSource(source);
+				SourceManager::getInstance().addSource(source);
 
 			}
 			else if(String::areEqual(sourceType, "persistent"))
@@ -114,7 +114,7 @@ public:
 				string filter = source.second.get("<xmlattr>.filter","");
 
 				PersistentSource* source = new PersistentSource(filename,filter);
-				SourceManager::getInstance()->addSource(source);
+				SourceManager::getInstance().addSource(source);
 			}
 			else
 			{

@@ -10,7 +10,7 @@
 
 #include "commons/container/Singleton.hpp"
 #include "commons/container/Entity.hpp"
-#include "commons/Lock.hpp"
+#include "commons/concurrent/Mutex.hpp"
 #include "commons//container/Container.hpp"
 #include "commons/Tools.hpp"
 #include "Client.hpp"
@@ -21,12 +21,12 @@
  * PacketSources that act as independent threads
  * thus it needs a Locking Logger.
  */
-typedef Logger<1, MutexLock> ClientManagerLogger;
+typedef Logger<1, Mutex> ClientManagerLogger;
 
 /**
  * A ClientManager contains a map of <IP , Client >.
  */
-typedef Container<const string, Client*, MutexLock> ClientManagerContainer;
+typedef Container<const string, Client*, Mutex> ClientManagerContainer;
 
 /**
  * A ClientManager is an Entity that receives packets

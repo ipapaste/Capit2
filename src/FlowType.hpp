@@ -21,6 +21,7 @@ using namespace std;
  */
 class FlowType
 {
+private:
 	string name_;
 	int port_;
 
@@ -29,11 +30,29 @@ class FlowType
 	 * can access. Should be used for new FlowState
 	 * generation.
 	 */
-	list<FlowState*> states;
+	deque<FlowState> states;
+
+	bool unknown;
 public:
+
+	FlowType()
+	{
+		unknown = true;
+	}
 	FlowType(string name, int port):name_(name)
 	{
 		port_ = port;
+		unknown = false;
+	}
+
+	bool isUnknown()
+	{
+		return unknown;
+	}
+
+	void setIsUnknown()
+	{
+		unknown = true;
 	}
 
 	int size()
@@ -41,7 +60,7 @@ public:
 		return states.size();
 	}
 
-	list<FlowState*> getFlowStates()
+	deque<FlowState> getFlowStates()
 	{
 		return states;
 	}
@@ -50,24 +69,22 @@ public:
 	 * Returns the state in which the input packet belongs.
 	 * Returns NULL if no state exists.
 	 */
-	FlowState* getFlowStateForPacket(Packet& packet)
+	FlowState getFlowStateForPacket(Packet& packet)
 	{
 		cout << "Came there " << endl;
-		FlowState* state = NULL;
-		BOOST_FOREACH(FlowState* st, states)
+		FlowState state;
+		for(int i = 0; i < states.size(); i++)
 		{
-			state = st->getState(packet);
-			if(state != NULL)
+			state = states[i].getState(packet);
+			if(!states[i].isUnknown())
 			{
-				cout << "Found a state" << endl;
 				return state;
 			}
 		}
-		cout << "came here." << endl;
 		return state;
 	}
 
-	void addState(FlowState* state)
+	void addState(IFlowState& state)
 	{
 		states.push_front(state);
 	}
@@ -84,9 +101,9 @@ public:
 
 	void print()
 	{
-		BOOST_FOREACH(FlowState* state, states)
+		for(int i = 0; i < states.size(); i++)
 		{
-			state->print();
+			states[i].print();
 		}
 	}
 

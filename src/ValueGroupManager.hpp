@@ -21,7 +21,7 @@ class ValueGroupManager
 private:
 	static map<int,deque<ValueGroup> > groups;
 public:
-	static ValueGroup getRandomGroup(int port)
+	static IValueGroup getNewRandomGroup(int port)
 	{
 		int dice = Rnd::getInt(0,groups[port].size()-1);
 

@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 #include "AbstractSource.hpp"
-
+#include "FlowManager.hpp"
 using namespace std;
 
 class PersistentSource: public AbstractSource
@@ -46,12 +46,14 @@ public:
 			source->setFilter(filter_);
 		}
 
-		ClientManagerInstance::getInstance()->registerSource();
-		ThreadShell::schedule(source);
+		ClientManagerInstance::getInstance().registerSource();
+		source->execute();
 	}
+
 
 	void extract()
 	{
+
 		PacketSource* source = new PacketSource();
 		source->openSource(filename_.c_str());
 
@@ -63,7 +65,7 @@ public:
 		{
 			cout << "No filter specified." << endl;
 		}
-		ClientManagerInstance::getInstance()->registerSource();
+		ClientManagerInstance::getInstance().registerSource();
 		FlowManager* manager = new FlowManager();
 		Packet* packet = NULL;
 		while ((packet = source->getNextPacket()) != NULL)
@@ -71,7 +73,9 @@ public:
 			manager->accept(*packet);
 		}
 		manager->calc();
+
 	}
+
 };
 
 #endif /* PERSISTENTSOURCE_HPP_ */

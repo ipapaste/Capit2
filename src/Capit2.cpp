@@ -10,20 +10,21 @@
 #include <stdlib.h>
 #include <iostream>
 #include <tclap/CmdLine.h>
-#include "Thread.hpp"
+#include "commons/concurrent/Daemon.hpp"
+#include "commons//tools/String.hpp"
 #include "ClientManager.hpp"
 #include "PacketSource.hpp"
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <string>
-#include "FlowManager.hpp"
-#include "MarkovMatrix.hpp"
+//#include "FlowManager.hpp"
 #include "CapitMarkovParser.hpp"
 #include "CapitInputParser.hpp"
-#include "model/input/SourceManager.hpp"
+//#include "model/input/SourceManager.hpp"
 
 using namespace std;
 using namespace boost;
+
 
 void loadMarkov(string markov)
 {
@@ -36,6 +37,7 @@ void loadSource(string source)
 	CapitInputParser* p = new CapitInputParser(source);
 	p->read();
 }
+
 
 
 /**
@@ -92,7 +94,6 @@ int main(int argc, char* argv[])
 	/**
 	 * Initializing the thread management system.
 	 */
-	ThreadShell::initialize();
 	try
 	{
 		/**
@@ -161,10 +162,12 @@ int main(int argc, char* argv[])
 			exit(0);
 		}
 
+
 		/**
 		 * Lazy load and initialize the client manager singleton.
 		 */
-		ClientManagerInstance::getInstance()->setTargetIp(target);
+		ClientManagerInstance::getInstance().setTargetIp(target);
+
 
 
 		loadMarkov(markov);
@@ -172,17 +175,19 @@ int main(int argc, char* argv[])
 
 		if(String::areEqual(mode,"replay"))
 		{
-			SourceManager::getInstance()->replay();
+			SourceManager::getInstance().replay();
 		}
 		else
 		{
-			SourceManager::getInstance()->extract();
+			SourceManager::getInstance().extract();
 			exit(0);
 		}
 		/**
 		 * Wait for all threads to end before shutting down.
 		 */
-		ThreadShell::join();
+		Daemon daemon;
+		daemon.execute(99999999);
+		daemon.join();
 	}
 	catch (TCLAP::ArgException &e)
 	{

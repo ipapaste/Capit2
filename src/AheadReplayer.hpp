@@ -9,14 +9,14 @@
 #define AHEADREPLAYER_HPP_
 
 #include "Packet.hpp"
-#include "Thread.hpp"
+#include "commons/concurrent/Thread.hpp"
 #include "commons/Tools.hpp"
 #include "commons/util/Date.hpp"
 #include "commons/math/Math.hpp"
 
 using namespace commons::util;
 
-class AheadReplayer: public ThreadShell
+class AheadReplayer: public Thread
 {
 private:
 	static const long AHEAD_THRESHOLD = 50000;
@@ -88,7 +88,7 @@ public:
 
 		setDelay(ahead);
 
-		ThreadShell::schedule(this);
+		execute();
 	}
 };
 

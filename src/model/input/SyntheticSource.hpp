@@ -11,22 +11,22 @@
 #include <iostream>
 #include <vector>
 #include "AbstractSource.hpp"
-#include "ActiveFlow.hpp"
+//#include "ActiveFlow.hpp"
 #include "commons/math/Rnd.hpp"
 #include <boost/lexical_cast.hpp>
-#include "Definitions.hpp"
+#include "../IMatrix.hpp"
 
 using namespace std;
 
 class SyntheticSource:public AbstractSource
 {
-	MarkovMatrix markovMatrix_;
-	DelayMatrix delayMatrix_;
+	IMatrix& markovMatrix_;
+	IMatrix& delayMatrix_;
 	int port_;
 	int count_;
 
 public:
-	SyntheticSource(MarkovMatrix markovMatrix, DelayMatrix delay, int port, int count):markovMatrix_(markovMatrix),delayMatrix_(delay)
+	SyntheticSource(IMatrix& markovMatrix, IMatrix& delay, int port, int count):markovMatrix_(markovMatrix),delayMatrix_(delay)
 	{
 		port_ = port;
 		count_ = count;
@@ -37,7 +37,7 @@ public:
 		return port_;
 	}
 
-	DelayMatrix getDelayMatrix()
+	IMatrix& getDelayMatrix()
 	{
 		return delayMatrix_;
 	}
@@ -59,6 +59,7 @@ public:
 
 	void replay()
 	{
+		/**
 		for(int i = 0; i < count_; i++)
 		{
 			int sourcePort = Rnd::getInt(1024 , 12000);
@@ -73,7 +74,7 @@ public:
 			}
 
 			cout << sourceIp << endl;
-			string targetIp = ClientManagerInstance::getInstance()->getTargetIp();
+			string targetIp = ClientManagerInstance::getInstance().getTargetIp();
 
 			int targetPort = port_;
 
@@ -88,8 +89,9 @@ public:
 			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group, delaymat);
 
 			cout << "Scheduling a flow" << endl;
-			ThreadShell::schedule(*aflow,1000);
+			aflow->execute(1000);
 		}
+		*/
 	}
 
 	void extract()

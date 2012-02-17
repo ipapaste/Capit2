@@ -1,0 +1,24 @@
+<capit>
+	<application name="http" port="80">
+		<state id="0" name="welcome">
+			<packet regex="start" value="nan"/>
+		</state>
+		<state id="1" name="security">
+			<packet regex="security" value="nan"/>
+		</state>
+		<state id="2" name="manuals">
+			<packet regex="manuals" value="nan"/>
+		</state>
+		<state id="3" name="status">
+			<packet regex="status" value="nan"/>
+		</state>
+		<state id="4" name="any">
+			<packet regex="GET" value="nan"/>
+		</state>
+		<groups>
+				<group>
+					
+				</group>
+		</groups>
+	</application>
+</capit>

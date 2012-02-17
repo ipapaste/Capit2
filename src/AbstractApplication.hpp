@@ -10,13 +10,13 @@
 
 #include "commons/logging/Logger.hpp"
 #include "commons/container/Entity.hpp"
-#include "commons/Lock.hpp"
+#include "commons/concurrent/Mutex.hpp"
 #include "commons/container/Queue.hpp"
 #include "commons/network/Socket.hpp"
 #include "commons/Printable.hpp"
 
 #include "Node.hpp"
-#include "Thread.hpp"
+#include "commons/concurrent/Thread.hpp"
 #include "applications/AbstractPreprocessor.hpp"
 #include <deque>
 
@@ -29,14 +29,14 @@
  * it is sending the packets to its output
  * channel asynchronously.
  */
-typedef Logger<1, MutexLock> ApplicationLogger;
+typedef Logger<1, Mutex> ApplicationLogger;
 
 /**
  * This represents the type of a Queue that
  * contains pointers to packets and the write
  * operation is guarded by a POSIX mutex.
  */
-typedef Queue<AbstractNode::PacketType*, MutexLock> STLQueue;
+typedef Queue<AbstractNode::PacketType*, Mutex> STLQueue;
 
 /**
  * This type represents a hierarchy of classes
@@ -69,12 +69,13 @@ typedef Queue<AbstractNode::PacketType*, MutexLock> STLQueue;
  * packets to be sent, which is when the application
  * terminates its thread.
  */
-typedef Entity5<ThreadShell, AbstractNode, ApplicationLogger, STLQueue,
-		BoostSocket> AbstractApplicationType;
+typedef Entity5<Thread, AbstractNode, ApplicationLogger, STLQueue, BoostSocket> AbstractApplicationType;
 
-class AbstractApplication: public AbstractApplicationType,public Printable
+class AbstractApplication: public AbstractApplicationType, public Printable
 {
 private:
+
+	static const long SLEEP_TIME_ON_EMPTY = 3000;
 
 	int port_;
 	/*
@@ -85,7 +86,7 @@ private:
 	/*
 	 * Used for guarded access to the status.
 	 */
-	MutexLock lock;
+	Mutex lock;
 
 	deque<AbstractPreprocessor*> preprocs;
 
@@ -106,7 +107,7 @@ public:
 	AbstractApplication(int port)
 	{
 		port_ = port;
-		lastTimestamp_= -1;
+		lastTimestamp_ = -1;
 	}
 
 	/**
@@ -125,22 +126,22 @@ public:
 		string destIp = *packet.getDestinationIp();
 		int destPort = packet.getDestinationPort();
 
-		if(lastTimestamp_ == -1)
+		if (lastTimestamp_ == -1)
 		{
-			cout <<"Connecting to host " << destIp << " at port " << destPort << " ..." << endl;
+			cout << "Connecting to host " << destIp << " at port " << destPort
+					<< " ..." << endl;
 			connect(destIp, destPort);
-			cout <<"Successfully connected to host " << destIp << endl;
+			cout << "Successfully connected to host " << destIp << endl;
 			lastTimestamp_ = packetTimestamp;
+
+			int delay = packetTimestamp - lastTimestamp_;
+
+			execute();
 		}
 
-		int delay = packetTimestamp - lastTimestamp_;
 
-		setDelay(delay);
-
-		ThreadShell::schedule(this);
 
 		lock.unlock();
-
 
 	}
 
@@ -152,11 +153,6 @@ public:
 	 */
 	void run()
 	{
-		executeCode();
-	}
-
-	void executeCode()
-	{
 		/**
 		 * Should never be null since run() is called
 		 * after a PacketSource adds the first packet
@@ -166,29 +162,43 @@ public:
 		 */
 		Packet* packet = getNext();
 
+		if(packet == NULL)
+		{
+			execute(SLEEP_TIME_ON_EMPTY);
+			return;
+		}
+
 		cout << "Sending:" << *packet->getPayload() << endl;
 
-		for(int i = 0; i < preprocs.size(); i++)
+		for (int i = 0; i < preprocs.size(); i++)
 		{
 			preprocs[i]->preprocess(*packet, previousResponce);
 		}
 
 		if (packet->getPayload() != 0)
 		{
-			previousResponce = sendData((u_char*) packet->getPayload()->c_str());
+			previousResponce = sendData(
+					(u_char*) packet->getPayload()->c_str());
 		}
 
 		delete packet;
+
+		Packet* next = peekNext();
+
+		if(next == NULL)
+			execute(SLEEP_TIME_ON_EMPTY);
+		else
+		{
+			int delay = next->getTimestamp() - lastTimestamp_;
+			execute(delay);
+		}
 	}
 
 	void print()
 	{
-		cout << "7" << endl;
 		cout << "[Application:" << port_ << "] Statistics:" << endl;
-		cout << "8" << endl;
-		for(int i = 0; i < preprocs.size(); i++)
+		for (int i = 0; i < preprocs.size(); i++)
 		{
-			cout << "9" << endl;
 			preprocs[i]->print();
 		}
 	}

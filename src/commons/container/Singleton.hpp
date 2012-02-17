@@ -21,17 +21,17 @@
  *
  * How to use :
  * Singleton<MyClass> MyClassSingleton;
- * MyClassSingleton::getInstance()->...
+ * MyClassSingleton::getInstance()....
  */
 template <class T> class Singleton
 {
 public:
-	static T* getInstance()
+	static T& getInstance()
 	{
 		if (!instance)
 			instance = new T;
 
-		return instance;
+		return *instance;
 	}
 private:
 	/*

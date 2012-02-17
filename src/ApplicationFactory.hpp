@@ -8,7 +8,7 @@
 #ifndef APPLICATIONFACTORY_HPP_
 #define APPLICATIONFACTORY_HPP_
 
-#include "commons/Lock.hpp"
+#include "commons/concurrent/Mutex.hpp"
 #include "commons/container/Container.hpp"
 #include "commons/container/Entity.hpp"
 #include "commons/container/Singleton.hpp"
@@ -27,7 +27,7 @@ typedef AbstractAccessor<AbstractApplication*> ApplicationAccessor;
 /**
  * The Container contains pairs of Port numbers and ApplicationAccessors.
  */
-typedef Container<int,ApplicationAccessor*,NoLock> FactoryPolicy;
+typedef Container<int,ApplicationAccessor*,Mutex> FactoryPolicy;
 
 
 typedef ObjectAccessor<HTTPApplication,ApplicationAccessor> HTTPAccessor;

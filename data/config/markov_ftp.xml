@@ -20,7 +20,29 @@
 		<state id="3" name="quit">
 			<command regex="QUIT" value="QUIT"/>
 		</state>
+		<state id="4" name="qui2t">
+			<command regex="QUIT" value="QUIT"/>
+		</state>
 		<groups>
+				<group>
+					<name>
+						<value>issle</value>
+					</name>
+					<pass>
+						<value>12341234</value>
+					</pass>
+					<file>
+						<value>Makefile</value>
+					</file>
+					<toRemove>
+						<value>file1.out</value>
+						<value>file2.out</value>
+					</toRemove>
+					<todele>
+						<value>dtbqdioet</value>
+						<value>pkqv</value>
+					</todele>
+				</group>
 				<group>
 					<name>
 						<value>issle</value>

@@ -5,14 +5,19 @@
  *      Author: issle
  */
 
-#ifndef MATRIX_HPP_
-#define MATRIX_HPP_
+#ifndef MATRIXC_HPP_
+#define MATRIXC_HPP_
 
 #include <iostream>
+#include <iomanip>
 #include "Math.hpp"
 
 using namespace std;
 
+namespace commons
+{
+namespace math
+{
 template <typename V> class Matrix
 {
 private:
@@ -34,6 +39,11 @@ public:
 				matrix[i][j] = 0;
 			}
 		}
+	}
+
+	Matrix()
+	{
+		Matrix(1);
 	}
 
 	vector<V> getLine(int i)
@@ -60,6 +70,12 @@ public:
 
 	float getValue(int i, int j)
 	{
+		int size = matrix.size();
+		if(i >= size || j >= size)
+		{
+			cout << i << " " << j << " are out of matrix limmits." << endl;
+			exit(0);
+		}
 		return matrix[i][j];
 	}
 
@@ -80,7 +96,12 @@ public:
 	{
 		return matrix.size();
 	}
+
+
 };
+}
+}
+
 
 
 

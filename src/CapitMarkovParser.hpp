@@ -2,12 +2,14 @@
 #define CAPIT_XMLMARKOV_PARSER_
 
 #include "commons/XMLParser.hpp"
-#include "FlowState.hpp"
+//#include "FlowState.hpp"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-#include "Flow.hpp"
-#include "ValueGroup.hpp"
-#include "ValueGroupManager.hpp"
+//#include "Flow.hpp"
+//#include "ValueGroup.hpp"
+//#include "ValueGroupManager.hpp"
+#include "service/CapitService.hpp"
+#include "model/IFlowState.hpp"
 using namespace std;
 
 /**
@@ -31,8 +33,10 @@ public:
 			string appName = application.second.get("<xmlattr>.name","");
 			int appPort = boost::lexical_cast<int, std::string>(application.second.get("<xmlattr>.port",""));
 
-			FlowType* app = new FlowType(appName, appPort);
-			FlowTypeManager::getInstance()->addType(appPort, app);
+			IFlowType& app = CapitService::getInstance().getFlowTypeService().getNewFlowType();
+			app.setName(appName);
+			app.setPort(appPort);
+
 
 			BOOST_FOREACH( ptree::value_type const& component, application.second )
 			{
@@ -43,9 +47,12 @@ public:
 					if(stateName.size()<1)
 						continue;
 					int stateId = boost::lexical_cast<int, std::string>(component.second.get("<xmlattr>.id",""));
-					FlowState* state = new FlowState(stateId, stateName);
 
-					app->addState(state);
+					IFlowState& state = CapitService::getInstance().getFlowStateService().getNewFlowState();
+					state.setId(stateId);
+					state.setName(stateName);
+
+
 
 
 					BOOST_FOREACH( ptree::value_type const& packet, component.second )
@@ -55,31 +62,37 @@ public:
 						if(packetName.size()<1)
 							continue;
 
-						Command* command = new Command(packetName,packetValue);
-						state->addCommand(command);
+						ICommand& command = CapitService::getInstance().getCommandService().getNewCommand();
+						command.setName(packetName);
+						command.setCommand(packetValue);
+						state.addCommand(command);
 
 					}
+					app.addState(state);
 				}
 				else if(component.first == "groups")
 				{
 					BOOST_FOREACH( ptree::value_type const&  group, component.second )
 					{
-						ValueGroup vgroup;
+						IValueGroup& vgroup = CapitService::getInstance().getValueGroupService().getNewValueGroup();
 						BOOST_FOREACH( ptree::value_type const& value, group.second )
 						{
 							string key(value.first);
 							BOOST_FOREACH( ptree::value_type const& valuesingle, value.second )
 							{
 								string data(valuesingle.second.data());
-								vgroup.setValue(key, data);
+								vgroup.addValue(key, data);
 							}
 						}
-						ValueGroupManager::addGroup(vgroup,appPort);
+						CapitService::getInstance().getValueGroupService().addGroup(vgroup,appPort);
 					}
 
 				}
 			}
+			CapitService::getInstance().getFlowTypeService().addType(appPort , app);
 		}
+
+		CapitService::getInstance().print();
 	}
 };
 

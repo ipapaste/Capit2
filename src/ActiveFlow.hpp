@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 #include <boost/foreach.hpp>
-#include "Thread.hpp"
+#include "commons/concurrent/Thread.hpp"
 #include "AheadReplayer.hpp"
 
 using namespace std;
@@ -23,25 +23,25 @@ using namespace std;
 class ActiveFlow:public Flow,  public AheadReplayer
 {
 private:
-	ValueGroup valueGroup_;
+	IValueGroup valueGroup_;
 	long previousTimestamp_;
 public:
 	ActiveFlow(string sourceIp, string destinationIp, int sourcePort,
-			int destinationPort, MarkovMatrix* group, DelayMatrix* delayMatrix) :
+			int destinationPort, MarkovMatrix group, DelayMatrix delayMatrix) :
 			Flow(sourceIp, destinationIp, sourcePort, destinationPort, group,
 					delayMatrix)
 	{
 		previousTimestamp_ = 0;
-		BOOST_FOREACH(FlowState* state, flowStates)
+		for(int i = 0; i < flowStates.size(); i++)
 				{
-					state->setTransitions(group);
-					if (state->getId() == 0)
+					flowStates[i].setTransitions(group);
+					if (flowStates[i].getId() == 0)
 					{
-						activeState = state;
+						activeState = flowStates[i];
 					}
 				}
 		valueGroup_ = ValueGroupManager::getRandomGroup(destinationPort);
-		ClientManagerInstance::getInstance()->registerSource();
+		ClientManagerInstance::getInstance().registerSource();
 	}
 private:
 	static const long AHEAD_THRESHOLD = 50000;
@@ -49,12 +49,12 @@ public:
 
 	void doWork(Packet* packet)
 	{
-		ClientManagerInstance::getInstance()->accept(*packet);
+		ClientManagerInstance::getInstance().accept(*packet);
 
 		int dice = Rnd::getInt(1000);
 
 		cout << "Dice: " << dice << endl;
-		int stateId = activeState->getTransitionId(dice);
+		int stateId = activeState.getTransitionId(dice);
 
 		cout << "State id: " << stateId << endl;
 
@@ -63,20 +63,20 @@ public:
 		if (stateId == -1)
 		{
 			cout << "No more states to move to." << endl;
-			ClientManagerInstance::getInstance()->removeSource();
+			ClientManagerInstance::getInstance().removeSource();
 			return;
 		}
 
 		int delay = 100;
-		BOOST_FOREACH(FlowState* state, flowStates)
+		for(int i =0; i < flowStates.size(); i++)
 				{
-					if (state->getId() == stateId)
+					if (flowStates[i].getId() == stateId)
 					{
 						delay = Rnd::getNormalCutoff(
-								delayMatrix_->getValue(activeState->getId(),
-										state->getId()), 100, 50);
+								delayMatrix_.getValue(activeState.getId(),
+										flowStates[i].getId()), 100, 50);
 
-						activeState = state;
+						activeState = flowStates[i];
 						break;
 					}
 				}
@@ -85,15 +85,15 @@ public:
 
 	Packet* generate()
 	{
-		if (activeState == NULL)
+		if (activeState.isUnknown())
 		{
 			cout << "NULL activeState found." << endl;
 			return NULL;
 		}
 
-		//FlowType* type = FlowTypeManager::getInstance()->getType(destinationPort_);
+		//FlowType* type = FlowTypeManager::getInstance().getType(destinationPort_);
 
-		deque<Command*> commands = activeState->getCommands();
+		deque<Command> commands = activeState.getCommands();
 		Packet* packet = new Packet();
 
 		string* src = new string(sourceIp_);
@@ -107,7 +107,7 @@ public:
 		if (commands.size() >= 1)
 		{
 			int size = commands.size();
-			string test = commands[Rnd::getInt(size - 1)]->getVariableCommand(
+			string test = commands[Rnd::getInt(size - 1)].getVariableCommand(
 					valueGroup_);
 			cout << test << endl;
 			string* s = new string(test);

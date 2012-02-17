@@ -10,14 +10,14 @@
 #include "Packet.hpp"
 #include "PacketSourcePolicies/PcapAdapter.hpp"
 #include "ClientManager.hpp"
-#include "Thread.hpp"
+#include "commons/concurrent/Thread.hpp"
 #include "commons/Tools.hpp"
 #include "commons/util/Date.hpp"
 #include "commons/math/Math.hpp"
 
 using namespace commons::util;
 
-typedef Entity2<PcapAdapter,ThreadShell> ActiveSource;
+typedef Entity2<PcapAdapter,Thread> ActiveSource;
 
 class PacketSource:public ActiveSource
 {
@@ -42,7 +42,7 @@ public:
 
 			if(packet == NULL)
 			{
-				//ClientManagerInstance::getInstance()->removeSource();
+				//ClientManagerInstance::getInstance().removeSource();
 				return;
 			}
 
@@ -52,7 +52,7 @@ public:
 				continue;
 			}
 
-			ClientManagerInstance::getInstance()->accept(*packet);
+			ClientManagerInstance::getInstance().accept(*packet);
 
 			if(firstPacketTimestamp ==-1)
 				firstPacketTimestamp = packet->getTimestamp();
@@ -70,7 +70,7 @@ public:
 
 		setDelay(ahead);
 
-		ThreadShell::schedule(this);
+		execute();
 	}
 };
 

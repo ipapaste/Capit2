@@ -12,7 +12,7 @@
 #include "Packet.hpp"
 #include "Node.hpp"
 #include "Flow.hpp"
-
+#include "service/CapitService.hpp"
 class FlowManager: public AbstractNode
 {
 public:
@@ -25,10 +25,11 @@ public:
 		if(obj.getPayload()->size()<1)
 			return;
 
-		if(FlowTypeManager::getInstance()->getType(obj.getDestinationPort()) ==NULL)
+		int dstPort = obj.getDestinationPort();
+
+		if(CapitService::getInstance().getFlowTypeService().getType(obj.getDestinationPort()).isUnknown())
 			return;
 
-		cout << obj.getTimestamp() << endl;
 		string id = Flow::getFlowId(*obj.getSourceIp(), *obj.getDestinationIp(), obj.getSourcePort(), obj.getDestinationPort());
 
 		Flow* f = NULL;
@@ -43,7 +44,6 @@ public:
 			f = flows[id];
 
 		}
-		cout << "1.1.1" << endl;
 		f->accept(obj);
 	}
 
