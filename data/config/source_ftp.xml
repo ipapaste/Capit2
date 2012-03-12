@@ -1,3 +1,5 @@
 <capit>
 	<source type="persistent" filename="data/ftp.pcap" filter="src 127.0.0.1" />
+	<source type="persistent" filename="data/ftp.pcap" filter="src 127.0.0.1" />
+	<source type="persistent" filename="data/ftp.pcap" filter="src 127.0.0.1" />
 </capit>

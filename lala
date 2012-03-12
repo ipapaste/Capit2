@@ -1,0 +1,9 @@
+o
+
+			<packet regex="DELE" value="DELE &todele&"/>
+			<packet regex="HELP" value="HELP"/>
+			<packet regex="LIST" value="LIST"/>
+			<packet regex="PWD" value="PWD"/>
+			<packet regex="PUT" value="PUT &file&" />
+			<packet regex="SYST" value="SYST"/>
+			<packet regex="RM" value="RM &toRemove&" />

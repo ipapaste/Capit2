@@ -23,79 +23,73 @@ using namespace std;
 class ActiveFlow:public Flow,  public AheadReplayer
 {
 private:
-	IValueGroup valueGroup_;
+	IValueGroup* valueGroup_;
 	long previousTimestamp_;
 public:
 	ActiveFlow(string sourceIp, string destinationIp, int sourcePort,
-			int destinationPort, MarkovMatrix group, DelayMatrix delayMatrix) :
+			int destinationPort, IMatrix& group, IMatrix& delayMatrix) :
 			Flow(sourceIp, destinationIp, sourcePort, destinationPort, group,
 					delayMatrix)
 	{
-		previousTimestamp_ = 0;
+		previousTimestamp_ = -1;
 		for(int i = 0; i < flowStates.size(); i++)
 				{
-					flowStates[i].setTransitions(group);
-					if (flowStates[i].getId() == 0)
+					flowStates[i]->setTransitions(group);
+					if (flowStates[i]->getId() == 0)
 					{
 						activeState = flowStates[i];
 					}
 				}
-		valueGroup_ = ValueGroupManager::getRandomGroup(destinationPort);
-		ClientManagerInstance::getInstance().registerSource();
+		valueGroup_ = &CapitService::getInstance().getValueGroupService().getRandomGroup(destinationPort);
 	}
 private:
 	static const long AHEAD_THRESHOLD = 50000;
 public:
 
-	void doWork(Packet* packet)
+	bool doWork(Packet* packet)
 	{
 		ClientManagerInstance::getInstance().accept(*packet);
 
-		int dice = Rnd::getInt(1000);
-
-		cout << "Dice: " << dice << endl;
-		int stateId = activeState.getTransitionId(dice);
+		int stateId = activeState->getRandomTransition();
 
 		cout << "State id: " << stateId << endl;
-
-		//cout << "Dice: " << dice << " from id: " << activeState->getId()<<" to id: " << stateId << endl;
 
 		if (stateId == -1)
 		{
 			cout << "No more states to move to." << endl;
-			ClientManagerInstance::getInstance().removeSource();
-			return;
+			return false;
+
 		}
 
 		int delay = 100;
 		for(int i =0; i < flowStates.size(); i++)
 				{
-					if (flowStates[i].getId() == stateId)
+					if (flowStates[i]->getId() == stateId)
 					{
 						delay = Rnd::getNormalCutoff(
-								delayMatrix_.getValue(activeState.getId(),
-										flowStates[i].getId()), 100, 50);
+								delayMatrix_->getValue(activeState->getId(),
+										flowStates[i]->getId()), 100, 50);
 
 						activeState = flowStates[i];
 						break;
 					}
 				}
 		previousTimestamp_ += delay;
+		setDelay(10);
+		return true;
 	}
 
 	Packet* generate()
 	{
-		if (activeState.isUnknown())
+		if (activeState == NULL)
 		{
 			cout << "NULL activeState found." << endl;
 			return NULL;
 		}
 
-		//FlowType* type = FlowTypeManager::getInstance().getType(destinationPort_);
+		deque<ICommand*> commands = activeState->getCopyCommands();
 
-		deque<Command> commands = activeState.getCommands();
 		Packet* packet = new Packet();
-
 		string* src = new string(sourceIp_);
 		string* dst = new string(destinationIp_);
 		packet->setDestinationIp(dst);
@@ -107,17 +101,16 @@ public:
 		if (commands.size() >= 1)
 		{
 			int size = commands.size();
-			string test = commands[Rnd::getInt(size - 1)].getVariableCommand(
-					valueGroup_);
-			cout << test << endl;
+			string test = commands[Rnd::getInt(size - 1)]->getVariableCommand(*valueGroup_);
 			string* s = new string(test);
 			packet->setPayload(s);
 		}
 		else
 		{
-			string* s = new string("TATATA");
+			string* s = new string("<Missing markov model>");
 			packet->setPayload(s);
 		}
+
 		return packet;
 
 	}

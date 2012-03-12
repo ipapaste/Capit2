@@ -46,7 +46,7 @@ public:
 
 		ahead = 0;
 	}
-	virtual void doWork(Packet* packet) = 0;
+	virtual bool doWork(Packet* packet) = 0;
 
 	virtual Packet* generate() = 0;
 
@@ -82,7 +82,10 @@ public:
 		{
 			Packet* packet = generate();
 			calculate(packet);
-			doWork(packet);
+			bool result = doWork(packet);
+
+			if(result == false)
+				return;
 
 		}
 

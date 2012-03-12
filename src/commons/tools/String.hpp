@@ -35,7 +35,17 @@ public:
 	static string& replace(string& source, string pattern, string data)
 	{
 		boost::replace_first(source, pattern, data);
+		return source;
+	}
 
+	static int findPosition(string& source, string pattern)
+	{
+		return source.find(pattern);
+	}
+
+	static string& replaceAt(int index, int size, string& source, string data)
+	{
+		source.replace(index,size,data);
 		return source;
 	}
 

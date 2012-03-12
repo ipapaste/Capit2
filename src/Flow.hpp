@@ -178,6 +178,7 @@ public:
 		{
 			activeState = &state;
 			lastTimestamp = packet.getTimestamp();
+			return;
 		}
 
 		//If no state is defined ignore the packet.
@@ -207,7 +208,7 @@ public:
 		//change the state.
 		else if (activeState->getId() != state.getId())
 		{
-
+			cout << "Transition from: " << activeState->getId() << " to " << state.getId() << endl;
 			int temp = group->getValue(activeState->getId(), state.getId());
 			temp++;
 			group->setValue(activeState->getId(), state.getId(), temp);
@@ -232,7 +233,7 @@ public:
 		//keep the same test.
 		else if (activeState->getId() == state.getId())
 		{
-
+			cout << "Transition from: " << activeState->getId() << " to " << state.getId() << endl;
 			int temp = group->getValue(activeState->getId(), state.getId());
 			temp++;
 			group->setValue(activeState->getId(), state.getId(), temp);

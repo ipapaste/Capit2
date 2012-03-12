@@ -63,7 +63,7 @@ public:
 	{
 		if(p.getPayload()->size()<1)
 		{
-			delete &p;
+			//delete &p;
 			return;
 		}
 
@@ -77,7 +77,7 @@ public:
 
 			if(accessor == NULL)
 			{
-				delete &p;
+				//delete &p;
 				return;
 			}
 
@@ -85,7 +85,7 @@ public:
 
 			if(app == NULL)
 			{
-				delete &p;
+				//delete &p;
 				return;
 			}
 

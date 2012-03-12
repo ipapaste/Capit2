@@ -17,10 +17,8 @@
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <string>
-//#include "FlowManager.hpp"
 #include "CapitMarkovParser.hpp"
 #include "CapitInputParser.hpp"
-//#include "model/input/SourceManager.hpp"
 
 using namespace std;
 using namespace boost;

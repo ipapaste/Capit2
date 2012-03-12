@@ -36,6 +36,21 @@ public:
 
 	}
 
+	IValueGroup& getRandomGroup(int port)
+	{
+		if(groups.count(port) ==0)
+		{
+			cout <<"Critical, no group with the given port." << endl;
+			exit(0);
+		}
+
+		deque<IValueGroup*> team = groups[port];
+
+		int dice = Rnd::getInt(0,team.size()-1);
+
+		return *team[dice];
+	}
+
 	void print()
 	{
 		map<int,deque<IValueGroup*> >::iterator it;

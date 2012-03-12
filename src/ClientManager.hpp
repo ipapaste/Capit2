@@ -11,7 +11,8 @@
 #include "commons/container/Singleton.hpp"
 #include "commons/container/Entity.hpp"
 #include "commons/concurrent/Mutex.hpp"
-#include "commons//container/Container.hpp"
+#include "commons/container/Container.hpp"
+#include "ClientManager.hpp"
 #include "commons/Tools.hpp"
 #include "Client.hpp"
 #include "Node.hpp"
@@ -50,6 +51,7 @@ class ClientManager: public AbstractClientManager
 {
 private:
 
+	Mutex lock;
 	/*
 	 * The target server Ip.
 	 */
@@ -128,7 +130,7 @@ public:
 		if (dstIp->compare(targetIp) != 0)
 		{
 
-			delete &packet;
+			//delete &packet;
 			return;
 		}
 

@@ -11,7 +11,7 @@
 #include <iostream>
 #include <vector>
 #include "AbstractSource.hpp"
-//#include "ActiveFlow.hpp"
+#include "ActiveFlow.hpp"
 #include "commons/math/Rnd.hpp"
 #include <boost/lexical_cast.hpp>
 #include "../IMatrix.hpp"
@@ -59,7 +59,7 @@ public:
 
 	void replay()
 	{
-		/**
+
 		for(int i = 0; i < count_; i++)
 		{
 			int sourcePort = Rnd::getInt(1024 , 12000);
@@ -78,20 +78,16 @@ public:
 
 			int targetPort = port_;
 
-
-			MarkovMatrix* group = new MarkovMatrix(markovMatrix_);
-			DelayMatrix* delaymat = new DelayMatrix(delayMatrix_);
-
-			bool result = group->validate();
+			bool result = markovMatrix_.validate();
 
 			if(result == 0)
 				continue;
-			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, group, delaymat);
+			ActiveFlow* aflow = new ActiveFlow(sourceIp, targetIp, sourcePort, targetPort, markovMatrix_, delayMatrix_);
 
 			cout << "Scheduling a flow" << endl;
-			aflow->execute(1000);
+			aflow->execute(2000);
 		}
-		*/
+
 	}
 
 	void extract()

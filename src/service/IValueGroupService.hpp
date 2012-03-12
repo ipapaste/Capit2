@@ -21,6 +21,8 @@ public:
 	{
 
 	}
+
+	virtual IValueGroup& getRandomGroup(int port) = 0;
 };
 
 

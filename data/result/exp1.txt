@@ -1,0 +1,62 @@
+Command: ./capit -m replay -d data/config/markov_ftp.xml -s data/config/exp1source.xml -t 127.0.0.1
+
+User made:
+
+215    1
+220    1
+230    1
+250    4
+257    5
+331    1
+
+Replay made:
+
+Without editing.
+
+Code Freq
+215    1
+220    1
+230    1
+250    4
+257    1
+331    1
+550    4
+
+Replay made:
+
+With editing.
+
+215    1
+220    1
+230    1
+250    4
+257    5
+331    1
+
+
+Sending:PASS kaiap498
+
+Sending:SYST
+
+Sending:MKD exp1
+
+Sending:CWD exp1
+
+Sending:MKD part1
+
+Sending:MKD part2
+
+Sending:MKD part334
+
+Sending:RMD part334
+
+Sending:MKD part3
+
+Sending:CWD part3
+
+Sending:CWD ..
+
+Sending:CWD ..
+
+Sending:QUIT
+

@@ -136,7 +136,7 @@ public:
 
 			int delay = packetTimestamp - lastTimestamp_;
 
-			execute();
+			execute(2000);
 		}
 
 
@@ -181,15 +181,19 @@ public:
 					(u_char*) packet->getPayload()->c_str());
 		}
 
-		delete packet;
+		//delete packet;
 
 		Packet* next = peekNext();
 
 		if(next == NULL)
-			execute(SLEEP_TIME_ON_EMPTY);
+		{
+			print();
+		}
 		else
 		{
-			int delay = next->getTimestamp() - lastTimestamp_;
+			long delay = next->getTimestamp() - lastTimestamp_;
+			lastTimestamp_ = next->getTimestamp();
+			cout << "Delay: " << delay << endl;
 			execute(delay);
 		}
 	}

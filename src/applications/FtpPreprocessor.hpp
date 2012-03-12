@@ -35,13 +35,11 @@ public:
 
 	void print()
 	{
-		cout << "10" << endl;
 		cout << "[Preprocessor: FTP] Statistics:" << endl;
 
 		map<int,int>::iterator it;
 		cout <<"Code";
 		cout << setw(5) << "Freq" << endl;
-		cout << "11" << endl;
 		for(it = responces.begin(); it != responces.end(); it++)
 		{
 

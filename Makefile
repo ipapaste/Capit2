@@ -1,4 +1,4 @@
-CXXFLAGS = -std=c++0x -I lib -I src 
+CXXFLAGS = -g -std=c++0x -I lib -I src 
 
 OBJS =		src/Capit2.o 
 

@@ -1,0 +1,3 @@
+<capit>
+	<source type="synthetic" probabilityMatrix="0 1 0 0;0 0 1 0;0 0 0.84 0.16;0 0 0 0" delayMatrix="100 100 100 100;100 100 100 100 100;100 100 100 100" port="21" clients="1" />
+</capit>

@@ -15,7 +15,7 @@
 
 using namespace std;
 
-class Packet:public MemoryPool<Packet>
+class Packet
 {
 public:
 	typedef int IdType;

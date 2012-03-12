@@ -61,7 +61,7 @@ private:
 
 	string name_;
 
-	vector<int> transitions;
+	int transitions[TABLE_SIZE];
 public:
 
 	FlowState()
@@ -70,9 +70,9 @@ public:
 	}
 	void setTransitions(IMatrix& group)
 	{
+
 		vector<double> trans = group.getLineCopy(id_);
 
-		transitions.resize(TABLE_SIZE);
 
 		for (int i = 0; i < TABLE_SIZE; i++)
 		{
@@ -93,17 +93,19 @@ public:
 
 			for (int j = index; j < count; j++)
 			{
+				if(j >=TABLE_SIZE || j < 0)
+					return;
 				transitions[j] = i;
-				cout << i;
 			}
 
 			index = count + 1;
 		}
+
 	}
 
 	int getRandomTransition()
 	{
-		int dice = Rnd::getInt(0, transitions.size() - 1);
+		int dice = Rnd::getInt(0, TABLE_SIZE);
 
 		return transitions[dice];
 	}
@@ -118,7 +120,6 @@ public:
 	 */
 	deque<ICommand*> getCopyCommands()
 	{
-		deque<ICommand*> commands;
 		return commands;
 	}
 
