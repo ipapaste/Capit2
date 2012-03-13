@@ -107,22 +107,31 @@ public:
 
 	string sendData(u_char* data)
 	{
-		boost::asio::streambuf request;
-		boost::asio::streambuf responce;
-		std::ostream request_stream(&request);
-		request_stream << data ;
-		// Send the request.
-		boost::asio::write(*socket, request);
+		try
+		{
+			boost::asio::streambuf request;
+			boost::asio::streambuf responce;
+			std::ostream request_stream(&request);
+			request_stream << data ;
+			// Send the request.
+			boost::asio::write(*socket, request);
 
-		boost::asio::read_until(*socket,responce,"\r\n");
+			boost::asio::read_until(*socket,responce,"\r\n");
 
-		std::istream responce_stream(&responce);
+			std::istream responce_stream(&responce);
 
-		string s;
+			string s;
 
-		responce_stream >> s;
+			responce_stream >> s;
+			return s;
 
-		return s;
+		}
+		catch(std::exception const& e) {
+			cout << e.what() << endl;
+			return "";
+		}
+
+		return "";
 
 	}
 
