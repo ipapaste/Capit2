@@ -117,12 +117,15 @@ public:
 			boost::asio::write(*socket, request);
 
 			boost::asio::read_until(*socket,responce,"\r\n");
-
+			std::istream response_stream(&responce);
+			string header;
 			std::istream responce_stream(&responce);
-
 			string s;
+			while (std::getline(response_stream, header))
+			{
+				s.append(header);
+			}
 
-			responce_stream >> s;
 			return s;
 
 		}

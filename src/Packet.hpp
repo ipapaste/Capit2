@@ -111,6 +111,11 @@ public:
         return payload_;
     }
 
+    string* getPayloadN() const
+    {
+        return payload_;
+     }
+
     const string* getSourceIp() const
     {
         return sourceIp_;

@@ -168,12 +168,14 @@ public:
 			return;
 		}
 
-		cout << "Sending:" << *packet->getPayload() << endl;
+
 
 		for (int i = 0; i < preprocs.size(); i++)
 		{
 			preprocs[i]->preprocess(*packet, previousResponce);
 		}
+
+		cout << "Sending:" << *packet->getPayload() << endl;
 
 		if (packet->getPayload() != 0)
 		{
